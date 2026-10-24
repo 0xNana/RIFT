@@ -72,7 +72,19 @@ On 24 October 2026 the mapped account held 210 tPOT native and 209.9 on the EVM 
 | Gas used | `5514501138689510` |
 | Runtime code | 2024 bytes, read back with `eth_getCode` |
 
-After that receipt the EVM balance was 31.0095830609122956. A quote for `publish` of the 24 October snapshot was 35.149584818577539 (`1083526042496225` gas at gas price `32440`). The publish transaction was not submitted. The payload that would have been committed is `0x6360ee55176421d34340185d27176baf107cb500e1d358e5f43d68f3adc0d577`, for best 173043, GRANDPA 173042, BEEFY 173042.
+The first snapshot was published in block 173181 with status 1.
+
+| | |
+|---|---|
+| Publish transaction | `0xa721afc66a1787eb29fda92ba03b3f52f7a289c05320007798415aadabb13e4b` |
+| Snapshot id | 0 |
+| Best / GRANDPA / BEEFY | 173043 / 173042 / 173042 |
+| BEEFY set id | 289 |
+| Authority count | 2 |
+| `beefyLag(0)` | 0 |
+| Payload hash | `0x6360ee55176421d34340185d27176baf107cb500e1d358e5f43d68f3adc0d577` |
+
+The archived file is `snapshots/6360ee55176421d34340185d27176baf107cb500e1d358e5f43d68f3adc0d577.json`. Its raw bytes hash to the on-chain `payloadHash`. After the receipt the deployer EVM balance was 6.4011611133188536.
 
 ## Run
 
@@ -119,7 +131,7 @@ Alert thresholds default to GRANDPA lag 6 and BEEFY lag 24. Those are product se
 
 ## What was not run
 
-- No `publish` transaction. After deployment the EVM balance was 31.0095830609122956 and the `publish` quote was 35.149584818577539. See the deployment table above.
+- The published snapshot is the 24 October capture at best 173043. A later head has not been published.
 - No on-chain BEEFY signature check. The contract cannot tell a forged snapshot from a real one.
 - The slot-gap counter did not observe a real skipped slot in the four-head sample. The unit test covers a synthetic gap of 3.
 - A previously deployed contract's runtime code on this endpoint contains the byte sequence `5f 35 60 e0 1c`, which is the usual `PUSH0` dispatcher. That is evidence the endpoint stored bytecode produced by a newer compiler. It is not a test that this project's paris bytecode executes on the network. This project stays on solc 0.8.19.
