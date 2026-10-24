@@ -3,6 +3,7 @@
 !.gitignore
 !.gitmodules
 !.env.example
+!.vercelignore
 
 # Dependencies, compiler output, and local builds
 node_modules/

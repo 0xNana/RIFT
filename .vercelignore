@@ -1,0 +1,18 @@
+# A .vercelignore replaces .gitignore for uploads. Keep secrets out.
+.env
+.env.*
+!.env.example
+.vercel
+.git
+node_modules
+web/dist
+out
+cache
+broadcast
+coverage
+lib/forge-std
+*.log
+*.swp
+*~
+Thumbs.db
+.DS_Store
