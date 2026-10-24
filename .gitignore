@@ -1,8 +1,19 @@
+# Unrelated dotfiles. Keep the repo metadata and the env template.
+.*
+!.gitignore
+!.gitmodules
+!.env.example
+
+# Dependencies, compiler output, and local builds
 node_modules/
-.env
+web/dist/
 out/
 cache/
 broadcast/
-web/dist/
+coverage/
+
+# Logs and OS junk that is not a dotfile
 *.log
-.DS_Store
+*.swp
+*~
+Thumbs.db
