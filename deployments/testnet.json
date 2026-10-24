@@ -1,0 +1,11 @@
+{
+  "chainId": 420420777,
+  "address": "0x4438B228A44aF949bcb6417BA13536909f3E37A9",
+  "txHash": "0x6575da61e037844b9ed9f6785c9fd73f2eff55f47642f0dd0c93d2e9b93e4dde",
+  "blockNumber": 173034,
+  "deployer": "0xBF8CbDb1F3c95140EDD688C242843237114C4Ce9",
+  "gasUsed": "5514501138689510",
+  "status": 1,
+  "solc": "0.8.19",
+  "evmVersion": "paris"
+}

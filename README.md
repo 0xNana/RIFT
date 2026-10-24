@@ -63,13 +63,16 @@ The throwaway deployer for this repo:
 
 Send test POT to the SS58 address, not to the `0x` address. The private key stays in `.env`, which is gitignored.
 
-On 23 October 2026 both the native free balance and `eth_getBalance` were 0. `eth_estimateGas` for deploying `FinalityRegistry` succeeded and returned `5459314494956310` gas. At the reported gas price of `33280`, that estimate is `181.6859863921459968` EVM-side tokens (`181685986392145996800` wei). The deploy script stopped before submitting a transaction:
+On 24 October 2026 the mapped account held 210 tPOT native and 209.9 on the EVM side. Deployment was included in block 173034 with status 1.
 
-```text
-deploy: balance 0 wei is below estimated fee 181685986392145996800 wei
-```
+| | |
+|---|---|
+| Contract | `0x4438B228A44aF949bcb6417BA13536909f3E37A9` |
+| Deploy transaction | `0x6575da61e037844b9ed9f6785c9fd73f2eff55f47642f0dd0c93d2e9b93e4dde` |
+| Gas used | `5514501138689510` |
+| Runtime code | 2024 bytes, read back with `eth_getCode` |
 
-There is no contract address and no deployment transaction hash until that account is funded and `pnpm deploy` is run again. `pnpm publish` is the same situation: it will not send a transaction without `REGISTRY_ADDRESS` and a balance.
+After that receipt the EVM balance was 31.0095830609122956. A quote for `publish` of the 24 October snapshot was 35.149584818577539 (`1083526042496225` gas at gas price `32440`). The publish transaction was not submitted. The payload that would have been committed is `0x6360ee55176421d34340185d27176baf107cb500e1d358e5f43d68f3adc0d577`, for best 173043, GRANDPA 173042, BEEFY 173042.
 
 ## Run
 
@@ -85,7 +88,7 @@ forge test
 pnpm dev
 ```
 
-`pnpm collector` follows four new heads by default and writes `evidence/collector-run.jsonl` plus `snapshots/latest.json`. The capture from this session is `evidence/collector-2026-10-23.jsonl`.
+`pnpm collector` follows four new heads by default and writes `evidence/collector-run.jsonl` plus `snapshots/latest.json`. Saved captures are `evidence/collector-2026-10-23.jsonl` and `evidence/collector-2026-10-24.jsonl`.
 
 After the mapped account has funds:
 
@@ -116,7 +119,7 @@ Alert thresholds default to GRANDPA lag 6 and BEEFY lag 24. Those are product se
 
 ## What was not run
 
-- No contract deployment and no `publish` transaction. The deployer balance is 0. See the estimate and the exact error above.
+- No `publish` transaction. After deployment the EVM balance was 31.0095830609122956 and the `publish` quote was 35.149584818577539. See the deployment table above.
 - No on-chain BEEFY signature check. The contract cannot tell a forged snapshot from a real one.
 - The slot-gap counter did not observe a real skipped slot in the four-head sample. The unit test covers a synthetic gap of 3.
 - A previously deployed contract's runtime code on this endpoint contains the byte sequence `5f 35 60 e0 1c`, which is the usual `PUSH0` dispatcher. That is evidence the endpoint stored bytecode produced by a newer compiler. It is not a test that this project's paris bytecode executes on the network. This project stays on solc 0.8.19.
