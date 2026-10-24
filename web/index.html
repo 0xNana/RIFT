@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portaldot finality</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <p class="eyebrow">Portaldot V3 testnet</p>
+        <h1>Finality monitor</h1>
+      </div>
+      <p id="connection" class="connection" role="status">Connecting</p>
+    </header>
+    <main>
+      <section id="alerts" class="alerts" aria-live="polite"></section>
+      <section class="grid" aria-label="Head numbers">
+        <article>
+          <h2>Best</h2>
+          <p id="best" class="figure">—</p>
+          <p id="best-hash" class="hash"></p>
+        </article>
+        <article>
+          <h2>GRANDPA</h2>
+          <p id="grandpa" class="figure">—</p>
+          <p id="grandpa-lag" class="sub"></p>
+        </article>
+        <article>
+          <h2>BEEFY</h2>
+          <p id="beefy" class="figure">—</p>
+          <p id="beefy-lag" class="sub"></p>
+        </article>
+        <article>
+          <h2>Skipped slots</h2>
+          <p id="skipped" class="figure">—</p>
+          <p id="slot" class="sub"></p>
+        </article>
+      </section>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Block authors</h2>
+          <p id="set" class="sub"></p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Validator</th>
+                <th scope="col">Blocks in this session</th>
+              </tr>
+            </thead>
+            <tbody id="authors"></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>On-chain snapshots</h2>
+          <form id="registry-form">
+            <label for="registry">FinalityRegistry</label>
+            <input id="registry" name="registry" spellcheck="false" autocomplete="off" />
+            <button type="submit">Load</button>
+          </form>
+        </div>
+        <p id="registry-status" class="sub" role="status"></p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Best</th>
+                <th scope="col">GRANDPA</th>
+                <th scope="col">BEEFY</th>
+                <th scope="col">Lag</th>
+                <th scope="col">Payload hash</th>
+              </tr>
+            </thead>
+            <tbody id="snapshots"></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Check a snapshot hash</h2>
+        <p class="sub">
+          The on-chain <code>payloadHash</code> is <code>keccak256</code> of the UTF-8
+          canonical JSON: object keys sorted, no extra whitespace.
+        </p>
+        <form id="hash-form">
+          <label for="payload">Snapshot JSON</label>
+          <textarea id="payload" name="payload" rows="8" spellcheck="false"></textarea>
+          <div class="row">
+            <button type="submit">Hash canonical JSON</button>
+            <button type="button" id="hash-raw">Hash exact text</button>
+          </div>
+        </form>
+        <p id="hash-result" class="hash" role="status"></p>
+      </section>
+    </main>
+    <footer>
+      <p>
+        Attestation registry only. The contract records what a reporter submits.
+        It does not verify BEEFY signatures.
+      </p>
+    </footer>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
