@@ -128,12 +128,14 @@ Alert thresholds default to GRANDPA lag 6 and BEEFY lag 24. Those are product se
 
 ## Dependencies
 
+The chain is Portaldot. The native node speaks Substrate JSON-RPC, so the collector and the dashboard use the Substrate JavaScript client. Those packages are published under the `@polkadot` npm scope. That scope is the library name. The endpoint, chain id, and runtime this repo talks to are Portaldot V3 testnet.
+
 Runtime:
 
-- `@polkadot/api` 16.4.9
+- `@polkadot/api` 16.4.9, Substrate client for the Portaldot node WebSocket
 - `@polkadot/util` 13.5.9
-- `@polkadot/util-crypto` 13.5.9
-- `ethers` 6.15.0
+- `@polkadot/util-crypto` 13.5.9, SS58 encoding with prefix 42
+- `ethers` 6.15.0, Portaldot revive EVM
 
 Development:
 
@@ -143,7 +145,7 @@ Development:
 
 No OpenZeppelin. The contract does not import another Solidity package.
 
-The collector logs a polkadot.js warning that the signed extensions `AuthorizeCall` and `EthSetOrigin` are unknown and treated as no-effect. This program does not submit Substrate extrinsics. Writes go through the EVM RPC.
+On connect, the Substrate client prints a warning that the signed extensions `AuthorizeCall` and `EthSetOrigin` are unknown and treated as no-effect. This program does not submit native extrinsics. Writes go through the Portaldot EVM RPC.
 
 ## Difference from PortalNode
 
