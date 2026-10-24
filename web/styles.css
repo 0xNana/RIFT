@@ -96,6 +96,13 @@ article, .panel {
 
 .sub, .hash { color: var(--muted); margin-top: 0.4rem; font-size: 0.92rem; overflow-wrap: anywhere; }
 
+a { color: var(--accent); text-underline-offset: 0.15em; }
+a:hover { color: var(--ink); }
+.match { color: var(--ok); }
+.miss { color: var(--bad); }
+.absent { color: var(--muted); }
+.tx { display: block; margin-top: 0.25rem; color: var(--muted); overflow-wrap: anywhere; }
+
 .panel { margin-top: 0.8rem; }
 
 .panel-head, .row, form#registry-form {

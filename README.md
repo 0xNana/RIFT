@@ -106,13 +106,13 @@ After the mapped account has funds:
 
 ```bash
 pnpm deploy
-# copy the address into REGISTRY_ADDRESS in .env
+# writes REGISTRY_ADDRESS and VITE_REGISTRY_ADDRESS into .env
 pnpm publish
 ```
 
-The dashboard reads the node in the browser. Paste a registry address to load `count`, `get`, and `beefyLag`. The hash box canonicalizes pasted JSON, or hashes the exact textarea bytes. Use canonical mode for a snapshot object. Use exact mode for an archived `snapshots/<hash>.json` file with no added newline.
+The dashboard reads the Portaldot node in the browser. Vite loads the repo `.env` and exposes only names that start with `VITE_`. The registry field uses a previously saved address, then `VITE_REGISTRY_ADDRESS`, then `web/public/config.json`. Block numbers link to the scanner `/blocks/<number>` route. Each row fetches `/snapshots/<payloadHash>.json`, hashes those exact bytes, and shows whether they match the chain. The publish transaction hash from the sibling `.meta.json` is shown as text. The hash box canonicalizes pasted JSON, or hashes the exact textarea bytes, and says whether that hash is one of the loaded snapshots. Use canonical mode for a snapshot object. Use exact mode for an archived file, which has no trailing newline. `snapshots/latest.json` has a trailing newline, so hashing that file as exact text does not match.
 
-Alert thresholds default to GRANDPA lag 6 and BEEFY lag 24. Those are product settings. During the 23 October sample, GRANDPA lag stayed at 1 and BEEFY lag moved through 7, 0, 1, and 2, so neither threshold fired. A slot gap alert fires when two delivered heads are more than one BABE slot apart.
+Alert thresholds come from `VITE_GRANDPA_LAG_THRESHOLD` and `VITE_BEEFY_LAG_THRESHOLD`. When those are unset, the dashboard uses GRANDPA lag 6 and BEEFY lag 24. Those are product settings. During the 23 October sample, GRANDPA lag stayed at 1 and BEEFY lag moved through 7, 0, 1, and 2, so neither threshold fired. A slot gap alert fires when two delivered heads are more than one BABE slot apart.
 
 `babe.lifetimeSlotGap` in a snapshot is `(currentSlot - genesisSlot) - bestNumber`. At capture it was `864`. `babe.skippedEpochs` was an empty list. `skippedSlotsObserved` counts gaps between heads this process actually delivered. A missed websocket message looks like a skip. The four-head sample had no gap (`skippedSlotsObserved` 0).
 
@@ -127,7 +127,11 @@ Alert thresholds default to GRANDPA lag 6 and BEEFY lag 24. Those are product se
 - Heads in the sample: best 162817–162820. At the end of the run, best was 162820, GRANDPA 162819, BEEFY 162817.
 - `forge test` passed 6 tests against `FinalityRegistry` with solc 0.8.19, optimizer runs 200, EVM version paris. The opcode listing contains no `PUSH0`. Creation bytecode is 2152 bytes and the runtime is 2024 bytes. The raw hex still contains the byte `0x5f` inside metadata or data, which is not a `PUSH0` instruction.
 - `node --test` covers canonical hashing, lag math, alert thresholds, and slot-gap accounting.
-- `pnpm build` produced the dashboard bundle. Headless Chrome loaded that bundle against the preview server. The page connected to `PortaldotV3 Test` and rendered live best, GRANDPA, and BEEFY numbers, both session validators, and the empty-registry message.
+- `pnpm build` produced the dashboard bundle. Headless Chrome loaded that bundle against the preview server. The page connected to `PortaldotV3 Test` and rendered live best, GRANDPA, and BEEFY numbers, both session validators, and the empty-registry message. That check was before the registry address existed.
+
+## What the dashboard showed on 24 October 2026
+
+Headless Chrome loaded a fresh `pnpm build` from the preview server. The page connected to `PortaldotV3 Test`. At that moment best was 173297, GRANDPA was 173295, and BEEFY was 173295. GRANDPA lag was 2, BEEFY lag was 0, the BEEFY set id was 290, and both session validators were listed. Skipped slots stayed 0. The registry field was filled from `VITE_REGISTRY_ADDRESS`. Snapshot 0 showed 173043 / 173042 / 173042, lag 0, and the archived file matched `0x6360ee55176421d34340185d27176baf107cb500e1d358e5f43d68f3adc0d577`. The publish transaction was shown as text. Clearing the address, and loading `0x0000000000000000000000000000000000000001`, still showed the empty-address and no-code messages. A 390px wide viewport kept the four head cards in two columns and let the snapshot table scroll sideways. The built files do not contain `PRIVATE_KEY`.
 
 ## What was not run
 
@@ -135,7 +139,7 @@ Alert thresholds default to GRANDPA lag 6 and BEEFY lag 24. Those are product se
 - No on-chain BEEFY signature check. The contract cannot tell a forged snapshot from a real one.
 - The slot-gap counter did not observe a real skipped slot in the four-head sample. The unit test covers a synthetic gap of 3.
 - A previously deployed contract's runtime code on this endpoint contains the byte sequence `5f 35 60 e0 1c`, which is the usual `PUSH0` dispatcher. That is evidence the endpoint stored bytecode produced by a newer compiler. It is not a test that this project's paris bytecode executes on the network. This project stays on solc 0.8.19.
-- The scanner route `/blocks/<number>` is what the scanner's own JavaScript builds. `/tx/<hash>` was not confirmed against a revive receipt, because this project has not sent one.
+- The scanner route `/blocks/<number>` is what the scanner's own JavaScript builds, and the dashboard links block numbers there. `/tx/<hash>` was not opened against the deploy or publish receipts, so those hashes are shown as text.
 
 ## Contract
 

@@ -3,6 +3,27 @@ import { ContractFactory, JsonRpcProvider, Wallet, formatUnits } from "ethers";
 import { loadEnv } from "../lib/env.js";
 import { CHAIN_ID } from "../lib/endpoints.js";
 
+function upsertEnv(key, value) {
+  let text = "";
+  try {
+    text = readFileSync(".env", "utf8");
+  } catch (err) {
+    if (err.code !== "ENOENT") throw err;
+  }
+  const lines = text.split(/\r?\n/);
+  let found = false;
+  const next = lines.map((line) => {
+    if (line.startsWith(`${key}=`)) {
+      found = true;
+      return `${key}=${value}`;
+    }
+    return line;
+  });
+  if (!found) next.push(`${key}=${value}`);
+  const body = `${next.filter((line, index) => line !== "" || index !== next.length - 1).join("\n")}\n`;
+  writeFileSync(".env", body, { mode: 0o600 });
+}
+
 function explain(err) {
   return [err.shortMessage, err.reason, err.code, err.message]
     .filter(Boolean)
@@ -75,6 +96,8 @@ try {
     "web/public/config.json",
     `${JSON.stringify({ registry: address, chainId: CHAIN_ID }, null, 2)}\n`,
   );
+  upsertEnv("REGISTRY_ADDRESS", address);
+  upsertEnv("VITE_REGISTRY_ADDRESS", address);
   console.log(JSON.stringify(record, null, 2));
 } catch (err) {
   console.error(`deploy: ${explain(err)}`);
