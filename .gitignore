@@ -1,0 +1,8 @@
+node_modules/
+.env
+out/
+cache/
+broadcast/
+web/dist/
+*.log
+.DS_Store
