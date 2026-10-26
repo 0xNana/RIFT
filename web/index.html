@@ -1,110 +1,248 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-view="overview">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Operator view of Portaldot V3 block production, GRANDPA finality, and BEEFY checkpoint health, with hash-anchored reports."
+    />
     <title>Portaldot finality</title>
+    <script>
+      (function () {
+        var names = { overview: 1, production: 1, registry: 1, verify: 1 };
+        var raw = location.hash.replace(/^#/, "");
+        if (raw === "registry-panel") raw = "registry";
+        if (names[raw]) document.documentElement.dataset.view = raw;
+      })();
+    </script>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <header class="top">
-      <div>
-        <p class="eyebrow">Portaldot V3 testnet</p>
-        <h1>Finality monitor</h1>
-      </div>
-      <p id="connection" class="connection" role="status">Connecting</p>
-    </header>
-    <main>
-      <section id="alerts" class="alerts" aria-live="polite"></section>
-      <section class="grid" aria-label="Head numbers">
-        <article>
-          <h2>Best</h2>
-          <p id="best" class="figure">—</p>
-          <p id="best-hash" class="hash"></p>
-        </article>
-        <article>
-          <h2>GRANDPA</h2>
-          <p id="grandpa" class="figure">—</p>
-          <p id="grandpa-lag" class="sub"></p>
-        </article>
-        <article>
-          <h2>BEEFY</h2>
-          <p id="beefy" class="figure">—</p>
-          <p id="beefy-lag" class="sub"></p>
-        </article>
-        <article>
-          <h2>Skipped slots</h2>
-          <p id="skipped" class="figure">—</p>
-          <p id="slot" class="sub"></p>
-        </article>
-      </section>
-      <section class="panel">
-        <div class="panel-head">
-          <h2>Block authors</h2>
-          <p id="set" class="sub"></p>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Validator</th>
-                <th scope="col">Blocks in this session</th>
-              </tr>
-            </thead>
-            <tbody id="authors"></tbody>
-          </table>
-        </div>
-      </section>
-      <section class="panel">
-        <div class="panel-head">
-          <h2>On-chain snapshots</h2>
-          <form id="registry-form">
-            <label for="registry">FinalityRegistry</label>
-            <input id="registry" name="registry" spellcheck="false" autocomplete="off" />
-            <button type="submit">Load</button>
-          </form>
-        </div>
-        <p id="registry-status" class="sub" role="status"></p>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Id</th>
-                <th scope="col">Best</th>
-                <th scope="col">GRANDPA</th>
-                <th scope="col">BEEFY</th>
-                <th scope="col">Lag</th>
-                <th scope="col">Payload hash</th>
-                <th scope="col">Archive</th>
-              </tr>
-            </thead>
-            <tbody id="snapshots"></tbody>
-          </table>
-        </div>
-      </section>
-      <section class="panel">
-        <h2>Check a snapshot hash</h2>
-        <p class="sub">
-          The on-chain <code>payloadHash</code> is <code>keccak256</code> of the UTF-8
-          canonical JSON: object keys sorted, no extra whitespace.
-        </p>
-        <form id="hash-form">
-          <label for="payload">Snapshot JSON</label>
-          <textarea id="payload" name="payload" rows="8" spellcheck="false"></textarea>
-          <div class="row">
-            <button type="submit">Hash canonical JSON</button>
-            <button type="button" id="hash-raw">Hash exact text</button>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="logo" aria-hidden="true"></span>
+          <div>
+            <p class="product">Portaldot</p>
+            <h1>Finality</h1>
           </div>
-        </form>
-        <p id="hash-result" class="hash" role="status"></p>
-      </section>
-    </main>
-    <footer>
-      <p>
-        Attestation registry only. The contract records what a reporter submits.
-        It does not verify BEEFY signatures.
-      </p>
-    </footer>
+        </div>
+        <nav class="nav" aria-label="Sections">
+          <a id="tab-overview" href="#overview">
+            <span>Overview</span>
+            <small>Heads and lag</small>
+          </a>
+          <a id="tab-production" href="#production">
+            <span>Production</span>
+            <small>Session authors</small>
+          </a>
+          <a id="tab-registry" href="#registry">
+            <span>Registry</span>
+            <small>On-chain snapshots</small>
+          </a>
+          <a id="tab-verify" href="#verify">
+            <span>Verify</span>
+            <small>Payload hash</small>
+          </a>
+        </nav>
+        <div class="side-status">
+          <p id="connection" class="connection" role="status"><span class="dot" aria-hidden="true"></span>Connecting</p>
+          <p id="runtime" class="env">Portaldot V3 testnet</p>
+          <p class="env">Chain <span id="chain-id"></span></p>
+          <p id="source" class="env">RPC endpoint: connecting</p>
+          <p id="updated">Waiting for a head</p>
+        </div>
+        <p class="sidebar-note">Attestation registry only. The contract stores what a reporter submits and does not verify BEEFY signatures.</p>
+      </aside>
+
+      <main id="main">
+        <section id="freshness-alert" class="freshness-alert" role="status" hidden></section>
+        <section id="alerts" class="alerts" aria-live="polite"></section>
+
+        <div id="overview" class="view">
+          <section class="product-strip" aria-label="Operator purpose">
+            <div>
+              <p class="product-kicker">Node Operations &amp; Tooling</p>
+              <h2>See which finality stage is falling behind.</h2>
+            </div>
+            <p>Use the live readout to investigate block production and finality lag. Check feed freshness before relying on the readings.</p>
+          </section>
+          <section class="metrics" aria-label="Head numbers">
+            <article class="metric best">
+              <header>
+                <h2>Best</h2>
+                <p class="hint">Latest imported head</p>
+              </header>
+              <p id="best" class="figure">—</p>
+              <p id="best-hash" class="hash"></p>
+            </article>
+            <article class="metric grandpa">
+              <header>
+                <h2>GRANDPA</h2>
+                <p class="hint">Finalized head</p>
+              </header>
+              <p id="grandpa" class="figure">—</p>
+              <p id="grandpa-lag" class="sub"></p>
+              <div class="meter-wrap">
+                <div
+                  id="grandpa-meter"
+                  class="meter"
+                  role="meter"
+                  aria-label="GRANDPA lag against the alert threshold"
+                  aria-valuemin="0"
+                  aria-valuenow="0"
+                >
+                  <span></span>
+                </div>
+                <span id="grandpa-cap" class="cap"></span>
+              </div>
+            </article>
+            <article class="metric beefy">
+              <header>
+                <h2>BEEFY</h2>
+                <p class="hint">Finalized head</p>
+              </header>
+              <p id="beefy" class="figure">—</p>
+              <p id="beefy-lag" class="sub"></p>
+              <div class="meter-wrap">
+                <div
+                  id="beefy-meter"
+                  class="meter"
+                  role="meter"
+                  aria-label="BEEFY lag against the alert threshold"
+                  aria-valuemin="0"
+                  aria-valuenow="0"
+                >
+                  <span></span>
+                </div>
+                <span id="beefy-cap" class="cap"></span>
+              </div>
+              <p id="beefy-set" class="sub"></p>
+            </article>
+            <article class="metric slots" id="slots-card">
+              <header>
+                <h2>Skipped slots</h2>
+                <p class="hint">Between heads received here</p>
+              </header>
+              <p id="skipped" class="figure">—</p>
+              <p id="slot" class="sub"></p>
+            </article>
+          </section>
+
+          <section class="split" aria-label="Gap and recent lag">
+            <article class="panel">
+              <header class="panel-head">
+                <div>
+                  <h2>Finality gap</h2>
+                  <p class="hint">Position of the three heads on this page</p>
+                </div>
+              </header>
+              <div id="track"></div>
+            </article>
+            <article class="panel">
+              <header class="panel-head">
+                <div>
+                  <h2>Lag on this page</h2>
+                  <p class="hint">One point per imported head. Not chain history.</p>
+                </div>
+              </header>
+              <p id="history-empty" class="empty">Lines appear after two heads.</p>
+              <svg id="history" hidden role="img" aria-labelledby="history-title"></svg>
+              <p id="history-note" class="hint"></p>
+              <p class="keyline">
+                <span><i class="swatch grandpa"></i>GRANDPA</span>
+                <span><i class="swatch beefy"></i>BEEFY</span>
+                <span><i class="swatch threshold"></i>Alert threshold</span>
+              </p>
+            </article>
+          </section>
+        </div>
+
+        <div id="production" class="view">
+          <section class="panel">
+            <header class="panel-head">
+              <div>
+                <h2>Block production</h2>
+                <p id="set" class="hint"></p>
+              </div>
+              <p id="observed" class="hint"></p>
+            </header>
+            <p class="hint note">Index is the session validator position in the BABE predigest. Counts start when this page connects.</p>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Index</th>
+                    <th scope="col">Validator</th>
+                    <th scope="col">Share</th>
+                    <th scope="col">Blocks</th>
+                  </tr>
+                </thead>
+                <tbody id="authors"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div id="registry" class="view">
+          <section class="panel">
+            <header class="panel-head">
+              <div>
+                <h2>Attestation registry</h2>
+                <p class="hint">Records a reporter’s submission. It does not check BEEFY signatures.</p>
+              </div>
+              <form id="registry-form" class="toolbar">
+                <label for="registry-address">FinalityRegistry</label>
+                <input id="registry-address" name="registry" spellcheck="false" autocomplete="off" />
+                <button class="primary" type="submit">Load</button>
+              </form>
+            </header>
+            <p id="registry-status" class="status-line" role="status"></p>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Id</th>
+                    <th scope="col">Best</th>
+                    <th scope="col">GRANDPA</th>
+                    <th scope="col">BEEFY</th>
+                    <th scope="col">Lag</th>
+                    <th scope="col">Payload hash</th>
+                    <th scope="col">Archive</th>
+                  </tr>
+                </thead>
+                <tbody id="snapshots"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div id="verify" class="view">
+          <section class="panel">
+            <header class="panel-head">
+              <div>
+                <h2>Check a snapshot hash</h2>
+                <p class="hint">
+                  <code>payloadHash</code> is keccak256 of the UTF-8 canonical JSON: sorted object keys, no extra whitespace.
+                  Exact mode hashes the textarea bytes. An archived file has no trailing newline.
+                </p>
+              </div>
+            </header>
+            <form id="hash-form">
+              <label for="payload">Snapshot JSON</label>
+              <textarea id="payload" name="payload" rows="8" spellcheck="false"></textarea>
+              <div class="row">
+                <button class="primary" type="submit">Hash canonical JSON</button>
+                <button class="ghost" type="button" id="hash-raw">Hash exact text</button>
+              </div>
+            </form>
+            <p id="hash-result" class="hash" role="status"></p>
+          </section>
+        </div>
+      </main>
+    </div>
     <script type="module" src="/main.js"></script>
   </body>
 </html>

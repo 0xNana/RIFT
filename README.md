@@ -4,7 +4,19 @@ A finality and block-production monitor for the Portaldot V3 testnet. It reads B
 
 This is a Portaldot Hacker House 2026 entry for the Node Operations & Tooling track.
 
+Source repository: [github.com/0xNana/portaldot-finality](https://github.com/0xNana/portaldot-finality).
+
 The contract stores numbers a reporter submits. It does not check BEEFY signatures or GRANDPA justifications. Signature verification is the roadmap toward a light-client bridge. It is not implemented.
+
+## Product and target user
+
+Portaldot Finality helps node and validator-program operators see whether block production, GRANDPA finality, and BEEFY checkpoints are keeping pace. The initial user is a Portaldot operator who needs to identify which stage is lagging and inspect what the monitor observed. This user hypothesis is still to be validated with Portaldot's operations team.
+
+The dashboard is a network-level monitor, not host telemetry: it does not report CPU, disk, peer count, or process health. The collector can be pointed at another endpoint for the same Portaldot V3 testnet with `SUBSTRATE_WS`. The browser dashboard uses `VITE_SUBSTRATE_WS` at build time and checks chain name, runtime spec, and the observed genesis hash before displaying data.
+
+The registry anchors a reporter-submitted snapshot hash. Anyone can compare the archive bytes with the on-chain hash, but the contract does not prove that the snapshot reflects consensus truth.
+
+See [the Hacker House submission pack](docs/hackathon-submission.md) for the pitch, demo flow, mentor questions, and final handoff checklist.
 
 ## Architecture
 
@@ -84,7 +96,7 @@ The first snapshot was published in block 173181 with status 1.
 | `beefyLag(0)` | 0 |
 | Payload hash | `0x6360ee55176421d34340185d27176baf107cb500e1d358e5f43d68f3adc0d577` |
 
-The archived file is `snapshots/6360ee55176421d34340185d27176baf107cb500e1d358e5f43d68f3adc0d577.json`. Its raw bytes hash to the on-chain `payloadHash`. After the receipt the deployer EVM balance was 6.4011611133188536.
+The archived file is `snapshots/6360ee55176421d34340185d27176baf107cb500e1d358e5f43d68f3adc0d577.json`. Its raw bytes hash to the on-chain `payloadHash`. The deployment is in [block 173034](https://scanner-testnet-v3.portaldot.dev/blocks/173034); the first report is in [block 173181](https://scanner-testnet-v3.portaldot.dev/blocks/173181). The transaction hashes remain visible as copyable text because the scanner's transaction-specific route has not been confirmed.
 
 ## Run
 
@@ -100,7 +112,7 @@ forge test
 pnpm dev
 ```
 
-`pnpm collector` follows four new heads by default and writes `evidence/collector-run.jsonl` plus `snapshots/latest.json`. Saved captures are `evidence/collector-2026-10-23.jsonl` and `evidence/collector-2026-10-24.jsonl`.
+`pnpm collector` follows four new heads by default and writes `evidence/collector-run.jsonl` plus `snapshots/latest.json`. To create a dated capture before a demo, run `pnpm collector --blocks 4 --out evidence/collector-demo.jsonl --snapshot snapshots/latest.json`. The checked-in on-chain archive currently documents the first report from 24 October 2026; run the capture and publish commands again from a network-connected environment before presenting it as fresh evidence.
 
 After the mapped account has funds:
 
@@ -110,9 +122,13 @@ pnpm deploy
 pnpm publish
 ```
 
-The dashboard reads the Portaldot node in the browser. Vite loads the repo `.env` and exposes only names that start with `VITE_`. The registry field uses a previously saved address, then `VITE_REGISTRY_ADDRESS`, then `web/public/config.json`. Block numbers link to the scanner `/blocks/<number>` route. Each row fetches `/snapshots/<payloadHash>.json`, hashes those exact bytes, and shows whether they match the chain. The publish transaction hash from the sibling `.meta.json` is shown as text. The hash box canonicalizes pasted JSON, or hashes the exact textarea bytes, and says whether that hash is one of the loaded snapshots. Use canonical mode for a snapshot object. Use exact mode for an archived file, which has no trailing newline. `snapshots/latest.json` has a trailing newline, so hashing that file as exact text does not match.
+The dashboard reads a Portaldot node in the browser. Vite loads the repo `.env` and exposes only names that start with `VITE_`; those values are public in the built client. `VITE_SUBSTRATE_WS` must be an unauthenticated public `ws://` or `wss://` endpoint with no credential query string. The page displays the endpoint host and verifies the expected chain name, runtime spec, and observed genesis hash. The genesis hash came from the public endpoint and has not been independently attested.
+
+The registry field uses a previously saved address, then `VITE_REGISTRY_ADDRESS`, then `web/public/config.json`. Block numbers link to the scanner `/blocks/<number>` route. Each row fetches `/snapshots/<payloadHash>.json`, hashes those exact bytes, and shows whether they match the chain. The report transaction hash is shown as text with a link to its containing scanner block, using the confirmed `/blocks/<number>` route. The registry status also shows how long ago the latest on-chain report was published. The hash box canonicalizes pasted JSON, or hashes the exact textarea bytes, and says whether that hash is one of the loaded snapshots. Use canonical mode for a snapshot object. Use exact mode for an archived file, which has no trailing newline. `snapshots/latest.json` has a trailing newline, so hashing that file as exact text does not match.
 
 Alert thresholds come from `VITE_GRANDPA_LAG_THRESHOLD` and `VITE_BEEFY_LAG_THRESHOLD`. When those are unset, the dashboard uses GRANDPA lag 6 and BEEFY lag 24. Those are product settings. During the 23 October sample, GRANDPA lag stayed at 1 and BEEFY lag moved through 7, 0, 1, and 2, so neither threshold fired. A slot gap alert fires when two delivered heads are more than one BABE slot apart.
+
+The live feed changes to a stale state when no new head arrives within 30 seconds. Override that setting with `VITE_HEAD_STALE_AFTER_SECONDS`. This is a feed-freshness setting, not a Portaldot protocol limit.
 
 `babe.lifetimeSlotGap` in a snapshot is `(currentSlot - genesisSlot) - bestNumber`. At capture it was `864`. `babe.skippedEpochs` was an empty list. `skippedSlotsObserved` counts gaps between heads this process actually delivered. A missed websocket message looks like a skip. The four-head sample had no gap (`skippedSlotsObserved` 0).
 
