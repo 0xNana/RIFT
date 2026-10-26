@@ -125,8 +125,8 @@ Keep the first release open-source and self-hostable. A Portaldot operator can r
 - [x] Project and track are stated clearly.
 - [x] Contract deployment and first report are documented in `README.md`.
 - [x] The runnable local commands and environment configuration are documented.
-- [ ] Capture a fresh four-head observation from a network-connected environment.
-- [ ] Publish a fresh snapshot from the funded testnet reporter and add its generated archive and metadata.
+- [x] Capture a fresh four-head observation from a network-connected host: best advanced 208060–208063; final snapshot 208063 / 208061 / 208055 (best / GRANDPA / BEEFY); no observed slot gaps. Raw observations and the captured snapshot are in `evidence/collector-2026-10-26.jsonl` and `evidence/snapshot-2026-10-26-unpublished.json`.
+- [ ] Publish that snapshot and add its generated archive and metadata. The RPC rejected the transaction as `Invalid Transaction`; the reporter has 6.40 EVM units while the estimated max fee is about 62.50. Send about 75 additional test tPOT to the mapped SS58 account in `README.md`, then run `pnpm run publish -- --snapshot evidence/snapshot-2026-10-26-unpublished.json`.
 - [ ] Confirm the GitHub repository and deployed dashboard are publicly accessible without sign-in.
 - [ ] Record and publish a product demo video under three minutes.
 - [ ] Export the six-slide copy below as a pitch deck PDF and attach it to the submission. PDF authoring is still pending because the required presentation authoring runtime is not available in this environment.
@@ -134,4 +134,4 @@ Keep the first release open-source and self-hostable. A Portaldot operator can r
 - [ ] Use Office Hours (Oct 28–29) to validate the target operator, alert thresholds, and next integration.
 - [ ] Confirm the current event schedule in DoraHacks or the official Discord before final submission.
 
-The direct testnet WebSocket was unavailable from the editing environment during the October 26 capture attempt (WebSocket close code `1006`). No new chain report has been fabricated; capture and publication remain explicit handoff steps.
+The direct testnet WebSocket connected from the elevated network environment for the October 26 capture. The captured state is preserved as unpublished evidence. The RPC rejected its publication transaction, so the only on-chain report remains snapshot id 0 from October 24; no new chain report has been fabricated.

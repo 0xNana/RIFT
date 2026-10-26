@@ -117,9 +117,9 @@ pnpm dev
 After the mapped account has funds:
 
 ```bash
-pnpm deploy
+pnpm run deploy
 # writes REGISTRY_ADDRESS and VITE_REGISTRY_ADDRESS into .env
-pnpm publish
+pnpm run publish
 ```
 
 The dashboard reads a Portaldot node in the browser. Vite loads the repo `.env` and exposes only names that start with `VITE_`; those values are public in the built client. `VITE_SUBSTRATE_WS` must be an unauthenticated public `ws://` or `wss://` endpoint with no credential query string. The page displays the endpoint host and verifies the expected chain name, runtime spec, and observed genesis hash. The genesis hash came from the public endpoint and has not been independently attested.
@@ -151,7 +151,8 @@ Headless Chrome loaded a fresh `pnpm build` from the preview server. The page co
 
 ## What was not run
 
-- The published snapshot is the 24 October capture at best 173043. A later head has not been published.
+- The on-chain registry still contains only snapshot id 0 from 24 October (best 173043). A fresh four-head RPC capture was collected on 26 October at 20:30 UTC, from best 208060 through 208063. It recorded best / GRANDPA / BEEFY as 208063 / 208061 / 208055, GRANDPA lag 2, BEEFY lag 6, BEEFY set id 348, and no observed slot gaps. All four BABE author derivations agreed. See [the raw head observations](evidence/collector-2026-10-26.jsonl) and [the captured snapshot](evidence/snapshot-2026-10-26-unpublished.json). The snapshot payload hash is `0xed639caade053ba8d9e18e7c02f09be20fc421c51ccc45d03a69d6e51636a595`.
+- The fresh capture has not been published. The registry rejected the signed transaction with `Invalid Transaction`. At the time, the reporter held 6.40 EVM units (6.50 native tPOT); estimated gas limit times max fee was about 62.50 EVM units. Send about 75 additional test tPOT to the mapped SS58 account in the table above (not the `0x` address), then run `pnpm run publish -- --snapshot evidence/snapshot-2026-10-26-unpublished.json`. The current published record remains the October 24 snapshot until a receipt is confirmed.
 - No on-chain BEEFY signature check. The contract cannot tell a forged snapshot from a real one.
 - The slot-gap counter did not observe a real skipped slot in the four-head sample. The unit test covers a synthetic gap of 3.
 - A previously deployed contract's runtime code on this endpoint contains the byte sequence `5f 35 60 e0 1c`, which is the usual `PUSH0` dispatcher. That is evidence the endpoint stored bytecode produced by a newer compiler. It is not a test that this project's paris bytecode executes on the network. This project stays on solc 0.8.19.
