@@ -116,6 +116,8 @@ Snapshot id 1 was published successfully in block 215699. The archived snapshot'
 
 The report transaction is in [block 215699](https://scanner-testnet-v3.portaldot.dev/blocks/215699). This remains a reporter-submitted, hash-anchored observation; the contract does not verify consensus proofs.
 
+[Watch the 45-second live product demo](demo/portaldot-finality-demo.mp4). It shows the live head and lag view, session authors, registry snapshot id 1, and exact-byte archive verification.
+
 ## Run
 
 ```bash

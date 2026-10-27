@@ -128,8 +128,8 @@ Keep the first release open-source and self-hostable. A Portaldot operator can r
 - [x] The runnable local commands and environment configuration are documented.
 - [x] Capture a fresh four-head observation on October 27: best advanced 215690–215693; final snapshot 215693 / 215691 / 215689 (best / GRANDPA / BEEFY); no observed slot gaps. Raw observations and the complete snapshot are in `evidence/collector-2026-10-27.jsonl` and `evidence/snapshot-2026-10-27.json`.
 - [x] Publish snapshot id 1 in block 215699. The generated archive and metadata are in `snapshots/`; the archived bytes match the on-chain payload hash.
+- [x] Record a 45-second live demo of the overview, session authors, registry, and exact-byte verification: `demo/portaldot-finality-demo.mp4`.
 - [ ] Confirm the GitHub repository and deployed dashboard are publicly accessible without sign-in.
-- [ ] Record and publish a product demo video under three minutes.
 - [ ] Export the six-slide copy below as a pitch deck PDF and attach it to the submission. PDF authoring is still pending because the required presentation authoring runtime is not available in this environment.
 - [x] Office Hours application submitted.
 - [ ] Use Office Hours (Oct 28–29) to validate the target operator, alert thresholds, and next integration.
