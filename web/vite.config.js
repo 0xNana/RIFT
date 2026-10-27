@@ -6,6 +6,7 @@ import path from "node:path";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "..");
 const snapshotDir = path.join(repoRoot, "snapshots");
+const outputDir = path.join(repoRoot, "dist");
 
 function snapshotFile(url) {
   const name = decodeURIComponent(String(url || "").split("?")[0].replace(/^\/+/, ""));
@@ -49,7 +50,7 @@ export default defineConfig({
         server.middlewares.use("/snapshots", snapshotsMiddleware);
       },
       closeBundle() {
-        const out = path.resolve(here, "dist/snapshots");
+        const out = path.join(outputDir, "snapshots");
         mkdirSync(out, { recursive: true });
         for (const name of readdirSync(snapshotDir)) {
           if (!name.endsWith(".json")) continue;
@@ -67,7 +68,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: path.resolve(here, "dist"),
+    outDir: outputDir,
     emptyOutDir: true,
   },
 });
