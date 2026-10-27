@@ -18,6 +18,8 @@ The registry anchors a reporter-submitted snapshot hash. Anyone can compare the 
 
 See [the Hacker House submission pack](docs/hackathon-submission.md) for the pitch, demo flow, mentor questions, and final handoff checklist.
 
+The six-slide submission pitch is available as a [PDF](submission/portaldot-finality-submission.pdf).
+
 ## Architecture
 
 ```mermaid
@@ -98,7 +100,7 @@ The first snapshot was published in block 173181 with status 1.
 
 The archived file is `snapshots/6360ee55176421d34340185d27176baf107cb500e1d358e5f43d68f3adc0d577.json`. Its raw bytes hash to the on-chain `payloadHash`. The deployment is in [block 173034](https://scanner-testnet-v3.portaldot.dev/blocks/173034); the first report is in [block 173181](https://scanner-testnet-v3.portaldot.dev/blocks/173181). The transaction hashes remain visible as copyable text because the scanner's transaction-specific route has not been confirmed.
 
-## Fresh capture and report (27 October 2026)
+## Earlier capture and report (snapshot id 1, 27 October 2026)
 
 The collector observed four consecutive heads from 215690 through 215693. The final snapshot records best / GRANDPA / BEEFY at 215693 / 215691 / 215689, GRANDPA lag 2, BEEFY lag 2, BEEFY set id 361, and zero observed slot gaps. BABE author derivation agreed on all four heads. The raw observations are in `evidence/collector-2026-10-27.jsonl`; the full capture is `evidence/snapshot-2026-10-27.json` and `snapshots/latest.json`.
 
@@ -116,7 +118,23 @@ Snapshot id 1 was published successfully in block 215699. The archived snapshot'
 
 The report transaction is in [block 215699](https://scanner-testnet-v3.portaldot.dev/blocks/215699). This remains a reporter-submitted, hash-anchored observation; the contract does not verify consensus proofs.
 
-[Watch the 45-second live product demo](demo/portaldot-finality-demo.mp4). It shows the live head and lag view, session authors, registry snapshot id 1, and exact-byte archive verification.
+## Latest capture and report (snapshot id 2, 27 October 2026)
+
+Snapshot 2 was captured at 18:17 UTC with best / GRANDPA / BEEFY at 221069 / 221068 / 221065. GRANDPA lag was 1, BEEFY lag was 3, the BEEFY set id was 370 with 2 authorities, and the collector observed zero slot gaps across four heads. Both session authors produced 2 blocks in the sample.
+
+| | |
+|---|---|
+| Publish transaction | `0x31c466c8683befe70ccac824b3e5e30c86e27a8f9c1b99b2500bf177fd60a066` |
+| Snapshot id | 2 |
+| Published in block | [221091](https://scanner-testnet-v3.portaldot.dev/blocks/221091) |
+| BEEFY set id / authorities | 370 / 2 |
+| `beefyLag(2)` | 3 |
+| Payload hash | `0xbe64bcb2f61554eaa326b960579d76a1450dee6e49f14e26be044cc0c7e47460` |
+| Archive | `snapshots/be64bcb2f61554eaa326b960579d76a1450dee6e49f14e26be044cc0c7e47460.json` |
+
+The archive bytes match the hash stored by the registry. This is a reporter-submitted, hash-anchored observation; it does not prove consensus truth.
+
+[Watch the 56-second live product demo](demo/portaldot-finality-demo.mp4). It shows the live head and lag view, session authors, registry snapshot id 2, and exact-byte archive verification.
 
 ## Run
 
@@ -132,7 +150,7 @@ forge test
 pnpm dev
 ```
 
-`pnpm collector` follows four new heads by default and writes `evidence/collector-run.jsonl` plus `snapshots/latest.json`. To create a dated capture before a demo, run `pnpm collector --blocks 4 --out evidence/collector-demo.jsonl --snapshot snapshots/latest.json`. The checked-in on-chain archive now includes snapshot id 1 from 27 October 2026. Capture again before a later demo if the head or report age matters.
+`pnpm collector` follows four new heads by default and writes `evidence/collector-run.jsonl` plus `snapshots/latest.json`. To create a dated capture before a demo, run `pnpm collector --blocks 4 --out evidence/collector-demo.jsonl --snapshot snapshots/latest.json`. The checked-in on-chain archive now includes snapshot id 2 from 27 October 2026. Capture again before a later demo if the head or report age matters.
 
 After the mapped account has funds:
 
