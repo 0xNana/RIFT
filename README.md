@@ -98,6 +98,24 @@ The first snapshot was published in block 173181 with status 1.
 
 The archived file is `snapshots/6360ee55176421d34340185d27176baf107cb500e1d358e5f43d68f3adc0d577.json`. Its raw bytes hash to the on-chain `payloadHash`. The deployment is in [block 173034](https://scanner-testnet-v3.portaldot.dev/blocks/173034); the first report is in [block 173181](https://scanner-testnet-v3.portaldot.dev/blocks/173181). The transaction hashes remain visible as copyable text because the scanner's transaction-specific route has not been confirmed.
 
+## Fresh capture and report (27 October 2026)
+
+The collector observed four consecutive heads from 215690 through 215693. The final snapshot records best / GRANDPA / BEEFY at 215693 / 215691 / 215689, GRANDPA lag 2, BEEFY lag 2, BEEFY set id 361, and zero observed slot gaps. BABE author derivation agreed on all four heads. The raw observations are in `evidence/collector-2026-10-27.jsonl`; the full capture is `evidence/snapshot-2026-10-27.json` and `snapshots/latest.json`.
+
+Snapshot id 1 was published successfully in block 215699. The archived snapshot's exact bytes hash to the payload hash stored by the registry.
+
+| | |
+|---|---|
+| Publish transaction | `0x3106a75ffa7c2304dc905930e2397ff3794792b95c68e4a7952c758e9989f12b` |
+| Snapshot id | 1 |
+| Best / GRANDPA / BEEFY | 215693 / 215691 / 215689 |
+| BEEFY set id / authorities | 361 / 2 |
+| `beefyLag(1)` | 2 |
+| Payload hash | `0xbf9a974e28d6fcfb0492a0845b36a55360e70df07764842de118aebfeab1d04e` |
+| Archive | `snapshots/bf9a974e28d6fcfb0492a0845b36a55360e70df07764842de118aebfeab1d04e.json` |
+
+The report transaction is in [block 215699](https://scanner-testnet-v3.portaldot.dev/blocks/215699). This remains a reporter-submitted, hash-anchored observation; the contract does not verify consensus proofs.
+
 ## Run
 
 ```bash
@@ -112,7 +130,7 @@ forge test
 pnpm dev
 ```
 
-`pnpm collector` follows four new heads by default and writes `evidence/collector-run.jsonl` plus `snapshots/latest.json`. To create a dated capture before a demo, run `pnpm collector --blocks 4 --out evidence/collector-demo.jsonl --snapshot snapshots/latest.json`. The checked-in on-chain archive currently documents the first report from 24 October 2026; run the capture and publish commands again from a network-connected environment before presenting it as fresh evidence.
+`pnpm collector` follows four new heads by default and writes `evidence/collector-run.jsonl` plus `snapshots/latest.json`. To create a dated capture before a demo, run `pnpm collector --blocks 4 --out evidence/collector-demo.jsonl --snapshot snapshots/latest.json`. The checked-in on-chain archive now includes snapshot id 1 from 27 October 2026. Capture again before a later demo if the head or report age matters.
 
 After the mapped account has funds:
 
@@ -151,8 +169,6 @@ Headless Chrome loaded a fresh `pnpm build` from the preview server. The page co
 
 ## What was not run
 
-- The on-chain registry still contains only snapshot id 0 from 24 October (best 173043). A fresh four-head RPC capture was collected on 26 October at 20:30 UTC, from best 208060 through 208063. It recorded best / GRANDPA / BEEFY as 208063 / 208061 / 208055, GRANDPA lag 2, BEEFY lag 6, BEEFY set id 348, and no observed slot gaps. All four BABE author derivations agreed. See [the raw head observations](evidence/collector-2026-10-26.jsonl) and [the captured snapshot](evidence/snapshot-2026-10-26-unpublished.json). The snapshot payload hash is `0xed639caade053ba8d9e18e7c02f09be20fc421c51ccc45d03a69d6e51636a595`.
-- The fresh capture has not been published. The registry rejected the signed transaction with `Invalid Transaction`. At the time, the reporter held 6.40 EVM units (6.50 native tPOT); estimated gas limit times max fee was about 62.50 EVM units. Send about 75 additional test tPOT to the mapped SS58 account in the table above (not the `0x` address), then run `pnpm run publish -- --snapshot evidence/snapshot-2026-10-26-unpublished.json`. The current published record remains the October 24 snapshot until a receipt is confirmed.
 - No on-chain BEEFY signature check. The contract cannot tell a forged snapshot from a real one.
 - The slot-gap counter did not observe a real skipped slot in the four-head sample. The unit test covers a synthetic gap of 3.
 - A previously deployed contract's runtime code on this endpoint contains the byte sequence `5f 35 60 e0 1c`, which is the usual `PUSH0` dispatcher. That is evidence the endpoint stored bytecode produced by a newer compiler. It is not a test that this project's paris bytecode executes on the network. This project stays on solc 0.8.19.

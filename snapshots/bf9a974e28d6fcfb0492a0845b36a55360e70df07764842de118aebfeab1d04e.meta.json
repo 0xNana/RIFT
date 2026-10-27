@@ -1,0 +1,9 @@
+{
+  "payloadHash": "0xbf9a974e28d6fcfb0492a0845b36a55360e70df07764842de118aebfeab1d04e",
+  "txHash": "0x3106a75ffa7c2304dc905930e2397ff3794792b95c68e4a7952c758e9989f12b",
+  "blockNumber": 215699,
+  "status": 1,
+  "contract": "0x4438B228A44aF949bcb6417BA13536909f3E37A9",
+  "id": "1",
+  "snapshot": "snapshots/bf9a974e28d6fcfb0492a0845b36a55360e70df07764842de118aebfeab1d04e.json"
+}

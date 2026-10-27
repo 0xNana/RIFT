@@ -29,7 +29,7 @@ The monitor reads BABE, GRANDPA, session, and BEEFY state from Portaldot V3's na
 - BABE author attribution from the pre-runtime digest and current session validator list.
 - A freshness state when the browser receives no new head within the configured time window.
 - A `FinalityRegistry` deployed at `0x4438B228A44aF949bcb6417BA13536909f3E37A9` on chain `420420777`.
-- A published snapshot (`id 0`) whose archived JSON bytes match its on-chain payload hash.
+- Two published registry snapshots; latest is id 1 from October 27, whose archived JSON bytes match its on-chain payload hash.
 - A dashboard that reads the registry, shows report age and reporter, compares each payload hash against the archive, and links report blocks through the scanner's confirmed block route.
 - A CLI collector that can point at another RPC endpoint for the same network through `SUBSTRATE_WS`.
 
@@ -107,10 +107,11 @@ Keep the first release open-source and self-hostable. A Portaldot operator can r
 **Network:** Portaldot V3 testnet · chain ID `420420777`<br>
 **Registry:** `0x4438B228A44aF949bcb6417BA13536909f3E37A9`<br>
 **Deployment:** transaction `0x6575da61e037844b9ed9f6785c9fd73f2eff55f47642f0dd0c93d2e9b93e4dde` · [block 173034](https://scanner-testnet-v3.portaldot.dev/blocks/173034)<br>
-**First report:** transaction `0xa721afc66a1787eb29fda92ba03b3f52f7a289c05320007798415aadabb13e4b` · [block 173181](https://scanner-testnet-v3.portaldot.dev/blocks/173181)<br>
-**Archive:** snapshot `id 0` · payload hash `0x6360ee55176421d34340185d27176baf107cb500e1d358e5f43d68f3adc0d577` · archived bytes match the on-chain hash.
+**Latest report (id 1):** transaction `0x3106a75ffa7c2304dc905930e2397ff3794792b95c68e4a7952c758e9989f12b` · [block 215699](https://scanner-testnet-v3.portaldot.dev/blocks/215699)<br>
+**Observed heads:** best 215693 · GRANDPA 215691 · BEEFY 215689 · BEEFY set 361 · two authorities · zero observed slot gaps<br>
+**Archive:** payload hash `0xbf9a974e28d6fcfb0492a0845b36a55360e70df07764842de118aebfeab1d04e` · archived bytes match the on-chain hash.
 
-**Speaker note:** These are the currently checked-in evidence values from October 24. Replace the report row with a newly published snapshot before final presentation. Do not describe this report as cryptographic proof of finality.
+**Speaker note:** These evidence values were captured and published on October 27. The report hash matches the archived bytes; it is not cryptographic proof of finality.
 
 ### Slide 6 — Adoption path
 
@@ -125,8 +126,8 @@ Keep the first release open-source and self-hostable. A Portaldot operator can r
 - [x] Project and track are stated clearly.
 - [x] Contract deployment and first report are documented in `README.md`.
 - [x] The runnable local commands and environment configuration are documented.
-- [x] Capture a fresh four-head observation from a network-connected host: best advanced 208060–208063; final snapshot 208063 / 208061 / 208055 (best / GRANDPA / BEEFY); no observed slot gaps. Raw observations and the captured snapshot are in `evidence/collector-2026-10-26.jsonl` and `evidence/snapshot-2026-10-26-unpublished.json`.
-- [ ] Publish that snapshot and add its generated archive and metadata. The RPC rejected the transaction as `Invalid Transaction`; the reporter has 6.40 EVM units while the estimated max fee is about 62.50. Send about 75 additional test tPOT to the mapped SS58 account in `README.md`, then run `pnpm run publish -- --snapshot evidence/snapshot-2026-10-26-unpublished.json`.
+- [x] Capture a fresh four-head observation on October 27: best advanced 215690–215693; final snapshot 215693 / 215691 / 215689 (best / GRANDPA / BEEFY); no observed slot gaps. Raw observations and the complete snapshot are in `evidence/collector-2026-10-27.jsonl` and `evidence/snapshot-2026-10-27.json`.
+- [x] Publish snapshot id 1 in block 215699. The generated archive and metadata are in `snapshots/`; the archived bytes match the on-chain payload hash.
 - [ ] Confirm the GitHub repository and deployed dashboard are publicly accessible without sign-in.
 - [ ] Record and publish a product demo video under three minutes.
 - [ ] Export the six-slide copy below as a pitch deck PDF and attach it to the submission. PDF authoring is still pending because the required presentation authoring runtime is not available in this environment.
@@ -134,4 +135,4 @@ Keep the first release open-source and self-hostable. A Portaldot operator can r
 - [ ] Use Office Hours (Oct 28–29) to validate the target operator, alert thresholds, and next integration.
 - [ ] Confirm the current event schedule in DoraHacks or the official Discord before final submission.
 
-The direct testnet WebSocket connected from the elevated network environment for the October 26 capture. The captured state is preserved as unpublished evidence. The RPC rejected its publication transaction, so the only on-chain report remains snapshot id 0 from October 24; no new chain report has been fabricated.
+The October 27 report is confirmed in the registry at snapshot id 1. Its stored fields and transaction receipt were checked against the captured JSON and its archive hash. The registry still records reporter-submitted data and does not verify GRANDPA or BEEFY proofs.
