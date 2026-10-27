@@ -5,7 +5,6 @@
 .vercel
 .git
 node_modules
-web/dist
 out
 cache
 broadcast
