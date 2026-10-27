@@ -5,16 +5,42 @@
 !.env.example
 !.vercelignore
 
+# Local docs and notes (existing tracked files remain tracked)
+/docs/
+
+# Local environment and signing material
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
 # Dependencies, compiler output, and local builds
 node_modules/
 web/dist/
+/dist/
+/build/
 out/
 cache/
 broadcast/
 coverage/
+.next/
+.nuxt/
+.turbo/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
 
 # Logs and OS junk that is not a dotfile
 *.log
 *.swp
+*.swo
+*.orig
+*.rej
 *~
 Thumbs.db
+Desktop.ini
+._*
