@@ -1,7 +1,7 @@
 {
   "name": "portaldot-finality",
   "version": "1.0.0",
-  "description": "BEEFY and BABE finality monitor for the Portaldot V3 testnet.",
+  "description": "Configurable React dashboard for blockchain and infrastructure monitoring.",
   "main": "script/collector.js",
   "scripts": {
     "test": "node --test test/*.test.js",
@@ -22,7 +22,9 @@
     "@polkadot/api": "16.4.9",
     "@polkadot/util": "13.5.9",
     "@polkadot/util-crypto": "13.5.9",
-    "ethers": "6.15.0"
+    "ethers": "6.15.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
     "vite": "6.4.1"

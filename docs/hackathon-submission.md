@@ -2,10 +2,10 @@
 
 ## Project summary
 
-**Project:** Portaldot Finality<br>
+**Project:** RIFT<br>
 **Track:** Node Operations & Tooling<br>
-**Source repository:** [github.com/0xNana/portaldot-finality](https://github.com/0xNana/portaldot-finality)<br>
-**One sentence:** Portaldot Finality gives operators one live view of BABE block production, GRANDPA finality, and BEEFY checkpoint lag, with snapshots they can hash-check against a Portaldot V3 EVM registry.
+**Source repository:** [RIFT source repository](https://github.com/0xNana/RIFT)<br>
+**One sentence:** RIFT monitors the live BABE → GRANDPA → BEEFY pipeline, then checks that each archived report matches its on-chain hash and stored report fields.
 
 ## Working schedule
 
@@ -13,7 +13,7 @@ Portaldot's timeline update lists Office Hours on **Oct 28–29**, final submiss
 
 ### Problem
 
-An operator checking only the latest block can miss where the finality pipeline is falling behind. Portaldot Finality puts the best head, GRANDPA-finalized head, BEEFY-finalized head, slot observations, and session authors in one live view, then preserves a reporter-submitted snapshot hash on Portaldot V3.
+An operator checking only the latest block can miss where the finality pipeline is falling behind. RIFT puts the best head, GRANDPA-finalized head, BEEFY-finalized head, slot observations, and session authors in one live view, then preserves a reporter-submitted snapshot hash on Portaldot V3.
 
 ### First user hypothesis
 
@@ -29,13 +29,16 @@ The monitor reads BABE, GRANDPA, session, and BEEFY state from Portaldot V3's na
 - BABE author attribution from the pre-runtime digest and current session validator list.
 - A freshness state when the browser receives no new head within the configured time window.
 - A `FinalityRegistry` deployed at `0x4438B228A44aF949bcb6417BA13536909f3E37A9` on chain `420420777`.
-- Two published registry snapshots; latest is id 1 from October 27, whose archived JSON bytes match its on-chain payload hash.
-- A dashboard that reads the registry, shows report age and reporter, compares each payload hash against the archive, and links report blocks through the scanner's confirmed block route.
+- Two published registry snapshots; latest is id 2 from October 27, whose archived JSON bytes match its on-chain payload hash.
+- A registry view that checks the exact archive hash and compares six archived values with the report fields stored on-chain.
+- A hash lookup that accepts a report payload hash or publication transaction hash and surfaces the matching report and archive checks.
+- Slot-gap alerts labeled as monitor observations, with the WebSocket notification caveat made explicit.
+- Links from reports to their scanner blocks and publication transaction evidence.
 - A CLI collector that can point at another RPC endpoint for the same network through `SUBSTRATE_WS`.
 
 ## Trust boundary
 
-The registry is an append-only report log. It stores values supplied by an allowlisted reporter and a hash of off-chain JSON. It does not validate BABE, GRANDPA, or BEEFY proofs, and the report hash proves only that the archived bytes match the value recorded by the reporter. The dashboard is an observer and diagnostic aid, not a trustless verifier or a bridge safety control.
+The registry is an append-only report log. It stores values supplied by an allowlisted reporter and a hash of off-chain JSON. The dashboard checks that the archive hash and six corresponding report fields agree with the record. It does not validate BABE, GRANDPA, or BEEFY proofs; matching RPC responses and matching report fields do not prove consensus truth. The dashboard is an observer and diagnostic aid, not a trustless verifier or a bridge safety control.
 
 `skippedSlotsObserved` counts gaps between heads delivered to this collector. A dropped WebSocket notification can look like a slot gap, so the interface labels it as an observed gap rather than a protocol-confirmed skipped slot.
 
@@ -51,7 +54,7 @@ Compare Best, GRANDPA, and BEEFY. Explain GRANDPA lag as Best minus GRANDPA, and
 Open Production. Show the session validator positions and the BABE authors observed since this page connected. Explain that this is a sample from the current browser session, not a historical performance ranking.
 
 **1:30–2:20 — Follow the on-chain evidence**<br>
-Open Registry. Show the snapshot row, payload hash, archive match, reporter, publication age, and link to the containing scanner block. Open Verify and hash the archived JSON in exact-byte mode if the live demo environment allows it.
+Open Reports and paste a payload hash to find its report. Show the exact-byte archive result, six-field comparison, reporter, publication age, and scanner block. Open Verify and hash the archived JSON in exact-byte mode.
 
 **2:20–2:50 — State the boundary and value**<br>
 Explain that the report is reporter-submitted and hash-anchored; consensus proofs are not verified by the contract. Close with the operator job: see which stage is behind and inspect the report before investigating.
@@ -71,7 +74,7 @@ Keep the first release open-source and self-hostable. A Portaldot operator can r
 
 ## Pitch deck copy
 
-### Slide 1 — Portaldot Finality
+### Slide 1 — RIFT
 
 **Subtitle:** See which stage of the Portaldot finality pipeline is falling behind.<br>
 **Footer:** Node Operations & Tooling · Portaldot Hacker House 2026
@@ -126,13 +129,13 @@ Keep the first release open-source and self-hostable. A Portaldot operator can r
 - [x] Project and track are stated clearly.
 - [x] Contract deployment and first report are documented in `README.md`.
 - [x] The runnable local commands and environment configuration are documented.
-- [x] Capture a fresh four-head observation on October 27: best advanced 215690–215693; final snapshot 215693 / 215691 / 215689 (best / GRANDPA / BEEFY); no observed slot gaps. Raw observations and the complete snapshot are in `evidence/collector-2026-10-27.jsonl` and `evidence/snapshot-2026-10-27.json`.
-- [x] Publish snapshot id 1 in block 215699. The generated archive and metadata are in `snapshots/`; the archived bytes match the on-chain payload hash.
-- [x] Record a 45-second live demo of the overview, session authors, registry, and exact-byte verification: `demo/portaldot-finality-demo.mp4`.
+- [x] Capture four heads on October 27 and publish snapshot id 2 in block 221091. Its best / GRANDPA / BEEFY values are 221069 / 221068 / 221065; the archived bytes match the on-chain payload hash. Evidence is in `evidence/collector-2026-10-27.jsonl`, `evidence/snapshot-2026-10-27.json`, and `snapshots/`.
+- [x] Export the six-slide [RIFT pitch PDF](../submission/portaldot-finality-submission.pdf) and confirm it is attached to the final submission.
+- [x] Record the 56-second [RIFT demo](../demo/portaldot-finality-demo.mp4) of the overview, session authors, registry, and exact-byte verification.
+- [ ] Record a refreshed demo that shows the live finality readings and six-field evidence checks.
 - [ ] Confirm the GitHub repository and deployed dashboard are publicly accessible without sign-in.
-- [ ] Export the six-slide copy below as a pitch deck PDF and attach it to the submission. PDF authoring is still pending because the required presentation authoring runtime is not available in this environment.
 - [x] Office Hours application submitted.
 - [ ] Use Office Hours (Oct 28–29) to validate the target operator, alert thresholds, and next integration.
 - [ ] Confirm the current event schedule in DoraHacks or the official Discord before final submission.
 
-The October 27 report is confirmed in the registry at snapshot id 1. Its stored fields and transaction receipt were checked against the captured JSON and its archive hash. The registry still records reporter-submitted data and does not verify GRANDPA or BEEFY proofs.
+The October 27 report is confirmed in the registry at snapshot id 2. Its stored fields and transaction receipt were checked against the captured JSON and its archive hash. The registry still records reporter-submitted data and does not verify GRANDPA or BEEFY proofs. Before recording the refreshed demo, capture a current sample and show the live finality readings alongside the archived report checks.

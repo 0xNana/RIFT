@@ -1,24 +1,32 @@
-# Portaldot finality monitor
+# RIFT — Onchain Intelligence
 
-A finality and block-production monitor for the Portaldot V3 testnet. It reads BABE, GRANDPA, and BEEFY from the native node, and it can publish a keccak256 commitment of that snapshot to an EVM attestation contract.
+A configurable Portaldot V3 monitoring dashboard. It includes a Substrate consensus profile for GRANDPA/BEEFY finality and a separate EVM JSON-RPC profile for the same network.
+
+The default monitoring profile is Portaldot V3 Test.
 
 This is a Portaldot Hacker House 2026 entry for the Node Operations & Tooling track.
 
-Source repository: [github.com/0xNana/portaldot-finality](https://github.com/0xNana/portaldot-finality).
+Source repository: [RIFT source repository](https://github.com/0xNana/RIFT).
 
 The contract stores numbers a reporter submits. It does not check BEEFY signatures or GRANDPA justifications. Signature verification is the roadmap toward a light-client bridge. It is not implemented.
 
 ## Product and target user
 
-Portaldot Finality helps node and validator-program operators see whether block production, GRANDPA finality, and BEEFY checkpoints are keeping pace. The initial user is a Portaldot operator who needs to identify which stage is lagging and inspect what the monitor observed. This user hypothesis is still to be validated with Portaldot's operations team.
+RIFT helps node and validator-program operators see whether block production, GRANDPA finality, and BEEFY checkpoints are keeping pace. The initial user is a Portaldot operator who needs to identify which stage is lagging and inspect what the monitor observed. This user hypothesis is still to be validated with Portaldot's operations team.
 
-The dashboard is a network-level monitor, not host telemetry: it does not report CPU, disk, peer count, or process health. The collector can be pointed at another endpoint for the same Portaldot V3 testnet with `SUBSTRATE_WS`. The browser dashboard uses `VITE_SUBSTRATE_WS` at build time and checks chain name, runtime spec, and the observed genesis hash before displaying data.
+The browser dashboard is implemented in React with Vite. `web/profiles.js` describes each profile's identity, metric cards, chart series, and thresholds. Profile-specific adapters live in `web/monitor-polkadot.js` and `web/monitor-evm.js`; the shared dashboard renders their common metrics, activity filters, source health, and history. Add a profile by defining its UI metadata and providing an adapter that emits the monitor state shape used by those components.
 
-The registry anchors a reporter-submitted snapshot hash. Anyone can compare the archive bytes with the on-chain hash, but the contract does not prove that the snapshot reflects consensus truth.
+The Portaldot EVM profile reads `eth_blockNumber`, `eth_syncing`, `eth_getBlockByNumber("finalized")`, and optionally `net_peerCount`. Vite reads `EVM_RPC` and `CHAIN_ID` at startup and bundles those public values into the dashboard. Use an endpoint that allows browser CORS and contains no credentials or query-string tokens. The adapter verifies the endpoint reports the configured Portaldot chain id.
+
+The Substrate profile is a network-level consensus monitor, not host telemetry: it does not report CPU, disk, or process health. The collector can be pointed at another endpoint for the same Portaldot V3 testnet with `SUBSTRATE_WS`. The browser profile uses `VITE_SUBSTRATE_WS` at build time and checks chain name, runtime spec, and the observed genesis hash before displaying data. The EVM profile can report peer count only when its RPC endpoint exposes `net_peerCount`.
+
+The registry anchors a reporter-submitted snapshot hash. The dashboard recomputes the hash from the exact archived bytes and compares six archived values (best, GRANDPA, BEEFY, BEEFY set ID, authority count, and observed skipped slots) with the fields stored in the on-chain report. This checks report/archive consistency; neither the hash nor the field comparison proves that the RPC observation reflects consensus truth.
+
+The Substrate overview shows the best → GRANDPA → BEEFY heights, calculated lag, and configured thresholds. Slot gaps are observations between delivered BABE headers because a missed WebSocket notification can look like a skipped slot. The Reports view lets an operator inspect the archived payload against its on-chain hash and stored fields.
 
 See [the Hacker House submission pack](docs/hackathon-submission.md) for the pitch, demo flow, mentor questions, and final handoff checklist.
 
-The six-slide submission pitch is available as a [PDF](submission/portaldot-finality-submission.pdf).
+RIFT's six-slide submission pitch is available as a [PDF](submission/portaldot-finality-submission.pdf).
 
 ## Architecture
 
@@ -134,7 +142,7 @@ Snapshot 2 was captured at 18:17 UTC with best / GRANDPA / BEEFY at 221069 / 221
 
 The archive bytes match the hash stored by the registry. This is a reporter-submitted, hash-anchored observation; it does not prove consensus truth.
 
-[Watch the 56-second live product demo](demo/portaldot-finality-demo.mp4). It shows the live head and lag view, session authors, registry snapshot id 2, and exact-byte archive verification.
+[Watch the 56-second live RIFT demo](demo/portaldot-finality-demo.mp4). It shows the live head and lag view, session authors, registry snapshot id 2, and exact-byte archive verification.
 
 ## Run
 
@@ -162,7 +170,7 @@ pnpm run publish
 
 The dashboard reads a Portaldot node in the browser. Vite loads the repo `.env` and exposes only names that start with `VITE_`; those values are public in the built client. `VITE_SUBSTRATE_WS` must be an unauthenticated public `ws://` or `wss://` endpoint with no credential query string. The page displays the endpoint host and verifies the expected chain name, runtime spec, and observed genesis hash. The genesis hash came from the public endpoint and has not been independently attested.
 
-The registry field uses a previously saved address, then `VITE_REGISTRY_ADDRESS`, then `web/public/config.json`. Block numbers link to the scanner `/blocks/<number>` route. Each row fetches `/snapshots/<payloadHash>.json`, hashes those exact bytes, and shows whether they match the chain. The report transaction hash is shown as text with a link to its containing scanner block, using the confirmed `/blocks/<number>` route. The registry status also shows how long ago the latest on-chain report was published. The hash box canonicalizes pasted JSON, or hashes the exact textarea bytes, and says whether that hash is one of the loaded snapshots. Use canonical mode for a snapshot object. Use exact mode for an archived file, which has no trailing newline. `snapshots/latest.json` has a trailing newline, so hashing that file as exact text does not match.
+The registry field uses a previously saved address, then `VITE_REGISTRY_ADDRESS`, then `web/public/config.json`. On Reports, paste a 32-byte payload hash or publication transaction hash to isolate its matching on-chain report and inspect the archive checks. Each row fetches `/snapshots/<payloadHash>.json`, hashes those exact bytes, and compares the report's six anchored values with the corresponding JSON fields. Block numbers link to the scanner `/blocks/<number>` route. The registry status also shows how long ago the latest on-chain report was published. Verify data can hash pasted JSON in canonical mode or exact-text mode and check whether the result matches a loaded report. Use exact mode for an archived file, which has no trailing newline. `snapshots/latest.json` has a trailing newline, so hashing that file as exact text does not match.
 
 Alert thresholds come from `VITE_GRANDPA_LAG_THRESHOLD` and `VITE_BEEFY_LAG_THRESHOLD`. When those are unset, the dashboard uses GRANDPA lag 6 and BEEFY lag 24. Those are product settings. During the 23 October sample, GRANDPA lag stayed at 1 and BEEFY lag moved through 7, 0, 1, and 2, so neither threshold fired. A slot gap alert fires when two delivered heads are more than one BABE slot apart.
 
