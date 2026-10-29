@@ -11,12 +11,16 @@
     "deploy": "node script/deploy.js",
     "publish": "node script/publish.js",
     "dev": "vite --config web/vite.config.js",
-    "build": "vite build --config web/vite.config.js"
+    "build": "vite build --config web/vite.config.js",
+    "product": "pnpm build && node script/product.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@12.4.1",
+  "engines": {
+    "node": ">=24.15.0"
+  },
   "type": "module",
   "dependencies": {
     "@polkadot/api": "16.4.9",

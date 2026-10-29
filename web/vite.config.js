@@ -7,7 +7,7 @@ import { CHAIN_ID, EVM_RPC } from "../lib/endpoints.js";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "..");
 const snapshotDir = path.join(repoRoot, "snapshots");
-const outputDir = path.join(repoRoot, "dist");
+const outputDir = path.resolve(repoRoot, process.env.RIFT_BUILD_DIR || "dist");
 
 function snapshotFile(url) {
   const name = decodeURIComponent(String(url || "").split("?")[0].replace(/^\/+/, ""));
