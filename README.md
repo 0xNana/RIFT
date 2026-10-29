@@ -26,7 +26,7 @@ The Substrate overview shows the best → GRANDPA → BEEFY heights, calculated 
 
 See [the Hacker House submission pack](docs/hackathon-submission.md) for the pitch, demo flow, mentor questions, and final handoff checklist.
 
-RIFT's six-slide submission pitch is available as a [PDF](submission/portaldot-finality-submission.pdf).
+RIFT's six-slide pitch deck is available as an [editable PowerPoint](submission/RIFT-pitch-deck.pptx) and [PDF](submission/RIFT-pitch-deck.pdf). See the [productization roadmap](PRODUCT_ROADMAP.md) for the path from this demo to an internal operator tool and a paid service.
 
 ## Architecture
 
@@ -142,7 +142,7 @@ Snapshot 2 was captured at 18:17 UTC with best / GRANDPA / BEEFY at 221069 / 221
 
 The archive bytes match the hash stored by the registry. This is a reporter-submitted, hash-anchored observation; it does not prove consensus truth.
 
-[Watch the 56-second live RIFT demo](demo/portaldot-finality-demo.mp4). It shows the live head and lag view, session authors, registry snapshot id 2, and exact-byte archive verification.
+[Watch the 38-second RIFT product demo](demo/RIFT-product-demo.mp4). It shows live Portaldot V3 finality readings, session-local block production, hash-based report lookup, and archived-byte verification. The live readings were captured on 29 October 2026; report 2 is dated 27 October.
 
 ## Run
 

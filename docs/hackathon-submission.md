@@ -130,12 +130,11 @@ Keep the first release open-source and self-hostable. A Portaldot operator can r
 - [x] Contract deployment and first report are documented in `README.md`.
 - [x] The runnable local commands and environment configuration are documented.
 - [x] Capture four heads on October 27 and publish snapshot id 2 in block 221091. Its best / GRANDPA / BEEFY values are 221069 / 221068 / 221065; the archived bytes match the on-chain payload hash. Evidence is in `evidence/collector-2026-10-27.jsonl`, `evidence/snapshot-2026-10-27.json`, and `snapshots/`.
-- [x] Export the six-slide [RIFT pitch PDF](../submission/portaldot-finality-submission.pdf) and confirm it is attached to the final submission.
-- [x] Record the 56-second [RIFT demo](../demo/portaldot-finality-demo.mp4) of the overview, session authors, registry, and exact-byte verification.
-- [ ] Record a refreshed demo that shows the live finality readings and six-field evidence checks.
+- [x] Export the six-slide [RIFT pitch PDF](../submission/RIFT-pitch-deck.pdf) and editable [PowerPoint](../submission/RIFT-pitch-deck.pptx).
+- [x] Record the refreshed [RIFT product demo](../demo/RIFT-product-demo.mp4) with live finality readings, session-local production, hash lookup, and archived-byte checks.
 - [ ] Confirm the GitHub repository and deployed dashboard are publicly accessible without sign-in.
 - [x] Office Hours application submitted.
 - [ ] Use Office Hours (Oct 28–29) to validate the target operator, alert thresholds, and next integration.
 - [ ] Confirm the current event schedule in DoraHacks or the official Discord before final submission.
 
-The October 27 report is confirmed in the registry at snapshot id 2. Its stored fields and transaction receipt were checked against the captured JSON and its archive hash. The registry still records reporter-submitted data and does not verify GRANDPA or BEEFY proofs. Before recording the refreshed demo, capture a current sample and show the live finality readings alongside the archived report checks.
+The October 27 report is confirmed in the registry at snapshot id 2. Its stored fields and transaction receipt were checked against the captured JSON and its archive hash. The registry still records reporter-submitted data and does not verify GRANDPA or BEEFY proofs. The refreshed demo pairs that dated report investigation with live RPC readings captured on October 29.

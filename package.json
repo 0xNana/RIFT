@@ -1,7 +1,7 @@
 {
-  "name": "portaldot-finality",
+  "name": "rift",
   "version": "1.0.0",
-  "description": "Configurable React dashboard for blockchain and infrastructure monitoring.",
+  "description": "Portaldot V3 finality monitoring and evidence investigation.",
   "main": "script/collector.js",
   "scripts": {
     "test": "node --test test/*.test.js",
