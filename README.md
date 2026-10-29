@@ -14,7 +14,7 @@ The contract stores numbers a reporter submits. It does not check BEEFY signatur
 
 RIFT helps node and validator-program operators see whether block production, GRANDPA finality, and BEEFY checkpoints are keeping pace. The initial user is a Portaldot operator who needs to identify which stage is lagging and inspect what the monitor observed. This user hypothesis is still to be validated with Portaldot's operations team.
 
-The browser dashboard is implemented in React with Vite. `web/profiles.js` describes each profile's identity, metric cards, chart series, and thresholds. Profile-specific adapters live in `web/monitor-polkadot.js` and `web/monitor-evm.js`; the shared dashboard renders their common metrics, activity filters, source health, and history. Add a profile by defining its UI metadata and providing an adapter that emits the monitor state shape used by those components.
+The dashboard is implemented in React with Vite. `web/profiles.js` describes each profile's identity, metric cards, chart series, and thresholds. Profile-specific adapters live in `web/monitor-polkadot.js` and `web/monitor-evm.js`; the shared dashboard renders their common metrics, activity filters, source health, and history. In development (`pnpm dev`), the Substrate profile reads the public RPC in the browser. The self-hosted product (`pnpm product`) moves that connection to a long-running Node service and loads durable observations from its same-origin API.
 
 The Portaldot EVM profile reads `eth_blockNumber`, `eth_syncing`, `eth_getBlockByNumber("finalized")`, and optionally `net_peerCount`. Vite reads `EVM_RPC` and `CHAIN_ID` at startup and bundles those public values into the dashboard. Use an endpoint that allows browser CORS and contains no credentials or query-string tokens. The adapter verifies the endpoint reports the configured Portaldot chain id.
 
@@ -39,11 +39,13 @@ flowchart LR
     revive[revive EVM]
     registry[FinalityRegistry]
   end
-  collector[collector] -->|new heads, finalized heads, babe and beefy queries| testnet
+  product[product monitor] -->|new heads, finalized heads, babe and beefy queries| testnet
+  product --> history[(SQLite history)]
   collector --> snapshot[canonical JSON snapshot]
   publisher[publisher] -->|keccak256| snapshot
   publisher -->|publish| registry
-  dashboard[dashboard] -->|WebSocket in the browser| testnet
+  dashboard[dashboard] -->|development only: WebSocket in browser| testnet
+  dashboard -->|product mode: read-only API| product
   dashboard -->|count and get| registry
   dashboard -->|recompute keccak256| snapshot
 ```
@@ -158,6 +160,8 @@ forge test
 pnpm dev
 ```
 
+For the self-hosted operator product, use Node.js 24.15 or newer and run `pnpm product`. It builds the React dashboard, starts the always-on monitor, stores observations in `.data/rift.sqlite`, and serves the dashboard plus a read-only API at `http://127.0.0.1:4179`. See the [RIFT product guide](PRODUCT_GUIDE.md) for service settings, API routes, retention, and deployment boundaries. The product service binds to loopback by default and has no authentication; do not expose it publicly.
+
 `pnpm collector` follows four new heads by default and writes `evidence/collector-run.jsonl` plus `snapshots/latest.json`. To create a dated capture before a demo, run `pnpm collector --blocks 4 --out evidence/collector-demo.jsonl --snapshot snapshots/latest.json`. The checked-in on-chain archive now includes snapshot id 2 from 27 October 2026. Capture again before a later demo if the head or report age matters.
 
 After the mapped account has funds:
@@ -168,7 +172,7 @@ pnpm run deploy
 pnpm run publish
 ```
 
-The dashboard reads a Portaldot node in the browser. Vite loads the repo `.env` and exposes only names that start with `VITE_`; those values are public in the built client. `VITE_SUBSTRATE_WS` must be an unauthenticated public `ws://` or `wss://` endpoint with no credential query string. The page displays the endpoint host and verifies the expected chain name, runtime spec, and observed genesis hash. The genesis hash came from the public endpoint and has not been independently attested.
+In `pnpm dev`, the dashboard reads the Portaldot node in the browser. Vite loads the repo `.env` and exposes only names that start with `VITE_`; those values are public in the built client. `VITE_SUBSTRATE_WS` must be an unauthenticated public `ws://` or `wss://` endpoint with no credential query string. The page displays the endpoint host and verifies the expected chain name, runtime spec, and observed genesis hash. The genesis hash came from the public endpoint and has not been independently attested. In `pnpm product`, the Node service reads `SUBSTRATE_WS` on the server, verifies the same network identity, and persists observations locally. It does not use a signing key.
 
 The registry field uses a previously saved address, then `VITE_REGISTRY_ADDRESS`, then `web/public/config.json`. On Reports, paste a 32-byte payload hash or publication transaction hash to isolate its matching on-chain report and inspect the archive checks. Each row fetches `/snapshots/<payloadHash>.json`, hashes those exact bytes, and compares the report's six anchored values with the corresponding JSON fields. Block numbers link to the scanner `/blocks/<number>` route. The registry status also shows how long ago the latest on-chain report was published. Verify data can hash pasted JSON in canonical mode or exact-text mode and check whether the result matches a loaded report. Use exact mode for an archived file, which has no trailing newline. `snapshots/latest.json` has a trailing newline, so hashing that file as exact text does not match.
 

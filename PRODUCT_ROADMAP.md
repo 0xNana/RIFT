@@ -7,26 +7,26 @@ RIFT is not trying to be a general block explorer. It helps an operator see whic
 
 ## What works today
 
-- A React dashboard reads Portaldot V3 Substrate telemetry and the EVM-hosted registry.
+- A React dashboard reads Portaldot V3 Substrate telemetry and the EVM-hosted registry. `pnpm dev` uses the browser RPC adapter; `pnpm product` runs the Substrate monitor server-side.
+- The self-hosted product mode keeps an always-on monitor with reconnect/backoff, graceful shutdown, a health endpoint, and a same-origin read API.
+- RIFT stores timestamped head/finality observations in SQLite, reloads history after page or process restarts, and applies a configurable retention window. The default is 30 days.
 - The Overview shows best, GRANDPA, and BEEFY heads, lag, thresholds, source health, and session-local observations.
-- Production attributes blocks from BABE pre-digests to the current session validator set. Its counts start when the monitor connects.
+- Production attributes blocks from BABE pre-digests to the current session validator set. Counts reset when the monitor service restarts; the history is retained separately.
 - Reports can be found by payload hash or publication transaction hash. RIFT hashes the exact archived bytes and compares six stored report fields with the archive.
 - A CLI collector can observe a bounded number of new heads and write JSONL plus a snapshot. The publisher can hash and publish a snapshot to the registry.
 
-The dashboard history and author counts are browser-session state. There is no persistent monitoring service, team authentication, external alert delivery, hosted workspace, billing, or consensus-proof validation. The registry stores reporter-submitted values; archive consistency does not prove that an observation is true.
+The self-hosted service is a single-instance pilot, not a shared hosted product. It has no team authentication, external alert delivery, managed backups, hosted workspace, billing, or consensus-proof validation. The registry stores reporter-submitted values; archive consistency does not prove that an observation is true.
 
-## Phase 1 — make it useful to the team
+## Phase 1 — pilot readiness
 
-Run RIFT against one Portaldot V3 endpoint on a team-controlled host. Before treating it as an always-on monitor, give the collector a continuous mode, reconnect/backoff behavior, graceful shutdown, and a health endpoint. A process supervisor should restart it after failure.
+The first product slice is implemented. Before a team relies on it for on-call operations, the deployment should add:
 
-Persist observations outside the browser. SQLite is enough to validate a single-team pilot; move to Postgres if multiple monitors or shared service access require it. Keep the RPC URL and credentials in server-side configuration, and never put a reporter private key in the browser. Make data age and endpoint failures visible alongside lag.
+1. A process supervisor, monitored backups, and a restore procedure for the SQLite history.
+2. A timestamped incident bundle with source/runtime identity, threshold settings, observed heads, and related report hashes.
+3. External alert delivery for stale telemetry and sustained finality lag, with deduplication and recovery notifications.
+4. An authenticated private deployment before more than one trusted operator uses the dashboard.
 
-For the first useful internal release, the team should be able to:
-
-1. Keep a monitor running and see when the source stops updating.
-2. Review lag and validator observations across restarts, not just for the current page session.
-3. Export a timestamped incident bundle containing the observed heads, source/runtime identity, thresholds, and relevant hashes.
-4. Re-run a report/archive check from that bundle without claiming it verifies consensus signatures.
+Keep the RPC URL and any credentials in server-side configuration, and never put a reporter private key in the monitor service.
 
 ## Phase 2 — validate the operator workflow
 
