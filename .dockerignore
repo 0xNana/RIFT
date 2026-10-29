@@ -1,0 +1,16 @@
+.git
+.env
+.env.*
+.data
+node_modules
+dist
+web/dist
+out
+cache
+broadcast
+coverage
+.aws
+.agents
+.codex
+.vercel
+fly.toml

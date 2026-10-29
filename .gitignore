@@ -4,6 +4,7 @@
 !.gitmodules
 !.env.example
 !.vercelignore
+!.dockerignore
 
 # Local docs and notes (existing tracked files remain tracked)
 /docs/
