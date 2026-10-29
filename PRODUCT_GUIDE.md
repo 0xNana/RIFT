@@ -36,14 +36,15 @@ The product service verifies the endpoint's chain name, runtime spec, and config
 | `RIFT_BUILD_DIR` | `dist` | Dashboard build output and static serving directory |
 | `RIFT_HISTORY_DAYS` | `30` | Observation retention, from 1 to 3650 days |
 | `RIFT_STALE_AFTER_SECONDS` | `30` | Head freshness threshold, from 1 to 3600 seconds |
+| `RIFT_CORS_ORIGINS` | empty | Comma-separated exact browser origins allowed to read the API |
 
 To keep the database outside the repository, set `RIFT_DATABASE` to its full path. If unset, the database is `.data/rift.sqlite` under the project directory. Local database files are gitignored. Retention cleanup runs at startup and after new observations.
 
-The service binds to loopback by default and has no authentication. Do not bind it to a public interface or expose it to the internet. For a shared team deployment, put it behind an authenticated private network or reverse proxy and add user access controls before relying on it for operational workflows.
+The service binds to loopback by default and has no authentication. The Fly deployment binds publicly and exposes the read-only API. Do not put secrets or private operational data in observations. For shared or sensitive team operations, put the service behind an authenticated private network or reverse proxy and add user access controls.
 
 ## Read-only API
 
-The dashboard and service share an origin. API responses are JSON and use `{ "error": { "code", "message" } }` for errors.
+API responses are JSON and use `{ "error": { "code", "message" } }` for errors. Same-origin requests work by default. To host the dashboard separately (for example, on Vercel), set `VITE_API_BASE_URL` to the RIFT API origin in the Vercel project environment, then set `RIFT_CORS_ORIGINS` on Fly to the exact Vercel origin (for example, `https://rift.example.com`). The local `.env` is ignored by Git and is not uploaded during a Vercel cloud build.
 
 - `GET /api/health` — service and source-monitor status
 - `GET /api/v1/current` — current readings, session validator counts, and storage metadata

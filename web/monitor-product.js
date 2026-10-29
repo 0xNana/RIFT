@@ -1,9 +1,14 @@
 const HISTORY_LIMIT = 500;
 const POLL_INTERVAL_MS = 3_000;
 const MAX_POINTS = 600;
+const API_BASE_URL = String(import.meta.env.VITE_API_BASE_URL || "").trim().replace(/\/+$/, "");
+
+function apiUrl(path) {
+  return `${API_BASE_URL}${path}`;
+}
 
 async function readJson(url) {
-  const response = await fetch(url, { cache: "no-store" });
+  const response = await fetch(apiUrl(url), { cache: "no-store" });
   const type = response.headers.get("content-type") || "";
   if (!type.includes("application/json")) throw new Error("RIFT service returned an unexpected response");
   const body = await response.json();
@@ -13,7 +18,7 @@ async function readJson(url) {
 
 export async function hasProductService() {
   try {
-    const response = await fetch("/api/health", { cache: "no-store" });
+    const response = await fetch(apiUrl("/api/health"), { cache: "no-store" });
     if (!(response.headers.get("content-type") || "").includes("application/json")) return false;
     const body = await response.json();
     return response.ok && body.service === "RIFT" && body.apiVersion === 1;

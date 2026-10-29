@@ -18,6 +18,17 @@ const host = process.env.RIFT_HOST || "127.0.0.1";
 const port = integerSetting("RIFT_PORT", 4179, 1, 65535);
 const retentionDays = integerSetting("RIFT_HISTORY_DAYS", 30, 1, 3650);
 const staleSeconds = integerSetting("RIFT_STALE_AFTER_SECONDS", 30, 1, 3600);
+const corsOrigins = new Set((process.env.RIFT_CORS_ORIGINS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean)
+  .map((origin) => {
+    const parsed = new URL(origin);
+    if (!["http:", "https:"].includes(parsed.protocol) || parsed.origin !== origin) {
+      throw new Error("RIFT_CORS_ORIGINS must contain exact HTTP or HTTPS origins without paths");
+    }
+    return parsed.origin;
+  }));
 const thresholds = {
   grandpaLag: thresholdSetting("GRANDPA_LAG_THRESHOLD", env.grandpaLagThreshold),
   beefyLag: thresholdSetting("BEEFY_LAG_THRESHOLD", env.beefyLagThreshold),
@@ -282,6 +293,21 @@ function serveStatic(req, res, pathname) {
 async function handleRequest(req, res) {
   const url = new URL(req.url || "/", "http://rift.local");
   if (url.pathname === "/api" || url.pathname.startsWith("/api/")) {
+    const origin = req.headers.origin;
+    if (origin && corsOrigins.has(origin)) {
+      res.setHeader("access-control-allow-origin", origin);
+      res.setHeader("vary", "Origin");
+    }
+    if (req.method === "OPTIONS") {
+      if (!origin || !corsOrigins.has(origin)) {
+        apiError(res, 403, "origin_not_allowed", "This browser origin is not allowed");
+        return;
+      }
+      res.setHeader("access-control-allow-methods", "GET");
+      res.setHeader("access-control-allow-headers", "Content-Type");
+      res.writeHead(204, { "cache-control": "no-store" }).end();
+      return;
+    }
     if (req.method !== "GET") {
       res.setHeader("allow", "GET");
       apiError(res, 405, "method_not_allowed", "This endpoint supports GET only");
