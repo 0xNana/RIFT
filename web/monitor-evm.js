@@ -38,7 +38,7 @@ export function startEvmMonitor(onChange) {
   let timer;
   let provider;
   let state = {
-    connection: { status: "connecting", label: "Connecting to Portaldot EVM", endpoint: "", runtime: "EVM JSON-RPC" },
+    connection: { mode: "browser-rpc", status: "connecting", label: "Connecting to Portaldot EVM", endpoint: "", runtime: "EVM JSON-RPC" },
     metrics: {},
     series: [],
     validators: [],
@@ -58,7 +58,7 @@ export function startEvmMonitor(onChange) {
     emit(failedConnection(state, error));
     return () => { closed = true; };
   }
-  emit({ connection: { status: "connecting", label: "Connecting to Portaldot EVM", endpoint: endpoint.host, runtime: `EVM JSON-RPC · chain ${evmChainId}` } });
+  emit({ connection: { mode: "browser-rpc", status: "connecting", label: "Connecting to Portaldot EVM", endpoint: endpoint.host, runtime: `EVM JSON-RPC · chain ${evmChainId}` } });
   provider = new JsonRpcProvider(endpoint.toString(), evmChainId, { staticNetwork: true });
 
   const poll = async () => {
@@ -88,7 +88,7 @@ export function startEvmMonitor(onChange) {
       if (syncValue && typeof syncValue === "object") nextAlerts.push({ code: "syncing", severity: "warning", title: "Node is syncing", value: syncStatus });
       const history = trimHistory([...state.series, { at: now, blockHeight: best, peerCount, best, finalized, alerts: nextAlerts }]);
       emit({
-        connection: { status: "live", label: "Portaldot EVM", endpoint: endpoint.host, runtime: `EVM JSON-RPC · chain ${evmChainId}`, updatedAt: now, error: "" },
+        connection: { mode: "browser-rpc", status: "live", label: "Portaldot EVM", endpoint: endpoint.host, runtime: `EVM JSON-RPC · chain ${evmChainId}`, updatedAt: now, error: "" },
         metrics: { best, finalized, peerCount, syncStatus, syncProgress },
         series: history,
         alerts: nextAlerts,

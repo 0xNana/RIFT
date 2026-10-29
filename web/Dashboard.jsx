@@ -36,11 +36,22 @@ function matchesSeverity(row, filter) {
   return filter === "all" || row.severity === filter;
 }
 
-function DataNotice({ connection, profile }) {
-  if (connection.status === "down") return <div className="notice notice-error" role="alert"><span aria-hidden="true">!</span><p><strong>Source connection needs attention</strong><br />{connection.error || connection.label}</p></div>;
-  if (connection.status === "stale") return <div className="notice notice-warning" role="status"><span aria-hidden="true">◷</span><p><strong>Telemetry is stale</strong><br />No new head arrived within the configured freshness window.</p></div>;
-  const source = profile.kind === "evm" ? "Portaldot EVM RPC" : "Portaldot Substrate RPC";
-  return <div className="notice notice-info" role="status"><span aria-hidden="true">ⓘ</span><p><strong>{connection.status === "live" ? `${source} connected` : `Connecting to ${source}`}</strong><br />{connection.status === "live" ? `${connection.runtime || "Network adapter"} · ${connection.endpoint}` : "Live readings will appear when the adapter receives its first update."}</p></div>;
+function observedLabel(timestamp) {
+  return timestamp ? new Date(timestamp).toLocaleString() : "not yet observed";
+}
+
+function DataNotice({ connection, profile, service }) {
+  const isService = connection.mode === "service";
+  if (connection.status === "down") return <div className="notice notice-error" role="alert"><span aria-hidden="true">!</span><p><strong>{isService ? "RIFT monitor needs attention" : "Source connection needs attention"}</strong><br />{connection.error || connection.label}{isService && connection.updatedAt ? ` · Showing saved data through ${observedLabel(connection.updatedAt)}.` : ""}</p></div>;
+  if (connection.status === "stale") return <div className="notice notice-warning" role="status"><span aria-hidden="true">◷</span><p><strong>Telemetry is stale</strong><br />{isService ? `No new head within ${service?.staleAfterSeconds ?? 30} seconds. Saved data is current through ${observedLabel(connection.updatedAt)}; ${service?.observations ?? 0} observations are retained.` : "No new head arrived within the configured freshness window."}</p></div>;
+  const source = isService ? "RIFT monitor service" : profile.kind === "evm" ? "Portaldot EVM RPC" : "Portaldot Substrate RPC";
+  const liveCopy = isService
+    ? `${connection.runtime || "Portaldot V3"} · durable history · ${service?.historyDays ?? 30}-day retention`
+    : `${connection.runtime || "Network adapter"} · ${connection.endpoint}`;
+  const connectingCopy = isService && connection.updatedAt
+    ? `Reconnecting to ${connection.endpoint}; displayed readings are saved through ${observedLabel(connection.updatedAt)}. ${service?.observations ?? 0} observations are retained.`
+    : "Live readings will appear when the monitor receives its first update.";
+  return <div className="notice notice-info" role="status"><span aria-hidden="true">ⓘ</span><p><strong>{connection.status === "live" ? `${source} connected` : `Connecting to ${source}`}</strong><br />{connection.status === "live" ? liveCopy : connectingCopy}</p></div>;
 }
 
 export function Overview({ profile, monitor }) {
@@ -51,14 +62,14 @@ export function Overview({ profile, monitor }) {
   const rows = useMemo(() => eventRows(monitor.series).filter((row) => matchesSeverity(row, severity)).slice(0, 8), [monitor.series, severity]);
 
   return <>
-    <DataNotice connection={monitor.connection} profile={profile} />
+    <DataNotice connection={monitor.connection} profile={profile} service={monitor.service} />
     <section className="metric-grid" aria-label="Network metrics">{profile.metrics.map((metric) => <MetricCard key={metric.id} metric={metric} profile={profile} metrics={monitor.metrics} />)}</section>
     <section className="content-grid">
       <TrendChart profile={profile} points={monitor.series} rangeId={rangeId} onRangeChange={setRangeId} seriesId={seriesId} onSeriesChange={setSeriesId} />
       <SourceHealth profile={profile} monitor={monitor} />
     </section>
     <HeadPosition profile={profile} metrics={monitor.metrics} />
-    <section className="surface activity-surface"><header className="surface-heading"><div><h2>Recent activity</h2><p>Updates and threshold events from this session</p></div><FilterSelect label="Activity severity" value={severity} onChange={setSeverity} options={[["all", "All events"], ["warning", "Warnings"], ["critical", "Critical"]]} /></header><EventTable rows={rows} compact /></section>
+    <section className="surface activity-surface"><header className="surface-heading"><div><h2>Recent activity</h2><p>{monitor.connection.mode === "service" ? "Persisted observations and threshold events" : "Updates and threshold events from this session"}</p></div><FilterSelect label="Activity severity" value={severity} onChange={setSeverity} options={[["all", "All events"], ["warning", "Warnings"], ["critical", "Critical"]]} /></header><EventTable rows={rows} compact /></section>
   </>;
 }
 
@@ -146,7 +157,7 @@ export function ProductionPanel({ profile, monitor }) {
   const validators = monitor.validators.filter((item) => item.account.toLowerCase().includes(query.toLowerCase())).sort((a, b) => sort === "index" ? a.index - b.index : b.blocks - a.blocks || a.index - b.index);
   const total = monitor.validators.reduce((sum, item) => sum + item.blocks, 0);
   return <section className="surface data-surface"><header className="surface-heading"><div><h2>Block production</h2><p>{monitor.validators.length} session validators · {shown(monitor.observed)} heads observed in this session</p></div><div className="table-filters"><label className="search-field"><span aria-hidden="true">⌕</span><input type="search" aria-label="Filter validators" placeholder="Filter validators" value={query} onChange={(event) => setQuery(event.target.value)} /></label><FilterSelect label="Sort validators" value={sort} onChange={setSort} options={[["blocks", "Most blocks"], ["index", "Validator index"]]} /></div></header>
-    <p className="table-note">Author counts use BABE pre-digests mapped through the current session validator set. Counts start when this page connects.</p>
+    <p className="table-note">Author counts use BABE pre-digests mapped through the current session validator set. They reset when the monitor service restarts; saved network observations remain available in activity history.</p>
     <div className="table-scroll"><table><thead><tr><th>Index</th><th>Validator</th><th>Production share</th><th className="numeric">Blocks</th></tr></thead><tbody>{validators.map((row) => { const percent = total ? (row.blocks / total) * 100 : 0; return <tr key={row.account}><td>{row.index}</td><td className="validator-address" title={row.account}>{row.account}</td><td><div className="share-cell"><span className="share-track"><i style={{ width: `${percent}%` }} /></span><span>{Math.round(percent)}%</span></div></td><td className="numeric">{shown(row.blocks)}</td></tr>; })}</tbody></table>{validators.length === 0 && <div className="table-empty">{query ? "No validators match this filter" : "Waiting for validator data"}</div>}</div>
   </section>;
 }

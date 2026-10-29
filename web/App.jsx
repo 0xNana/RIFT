@@ -27,7 +27,7 @@ function readSection() {
 
 function blankState(label = "Connecting") {
   return {
-    connection: { status: "connecting", label, endpoint: "", runtime: "" },
+    connection: { status: "connecting", label, endpoint: "", runtime: "", mode: "browser-rpc" },
     metrics: {}, series: [], validators: [], alerts: [], details: [], observed: 0,
   };
 }
@@ -60,15 +60,23 @@ export default function App() {
     const isSubstrate = profileId === "portaldot";
     setPublishedHashes(new Map());
     setMonitor(blankState(isSubstrate ? "Connecting to Portaldot" : "Connecting to Portaldot EVM RPC"));
-    const loadAdapter = isSubstrate
-      ? import("./monitor-polkadot.js")
-      : import("./monitor-evm.js");
-    loadAdapter.then((adapter) => {
+    const start = async () => {
+      if (isSubstrate) {
+        const product = await import("./monitor-product.js");
+        if (await product.hasProductService()) {
+          if (active) stop = product.startProductMonitor(setMonitor);
+          return;
+        }
+      }
+      const adapter = isSubstrate
+        ? await import("./monitor-polkadot.js")
+        : await import("./monitor-evm.js");
       if (!active) return;
       stop = isSubstrate
         ? adapter.startPortaldotMonitor(setMonitor)
         : adapter.startEvmMonitor(setMonitor);
-    }).catch((error) => {
+    };
+    start().catch((error) => {
       if (active) setMonitor((current) => ({ ...current, connection: { ...current.connection, status: "down", label: error.message, error: error.message } }));
     });
     return () => {
@@ -77,8 +85,11 @@ export default function App() {
     };
   }, [profileId]);
 
-  const connection = monitor.connection.updatedAt && profile.thresholds.staleSeconds
-    && now - monitor.connection.updatedAt > profile.thresholds.staleSeconds * 1000
+  const staleSeconds = monitor.connection.mode === "service"
+    ? monitor.service?.staleAfterSeconds || profile.thresholds.staleSeconds
+    : profile.thresholds.staleSeconds;
+  const connection = monitor.connection.status === "live" && monitor.connection.updatedAt && staleSeconds
+    && now - monitor.connection.updatedAt > staleSeconds * 1000
     ? { ...monitor.connection, status: "stale", label: "Stale telemetry" }
     : monitor.connection;
 

@@ -46,7 +46,7 @@ export function startPortaldotMonitor(onChange) {
   let unsubFinalized;
   let closed = false;
   let state = {
-    connection: { status: "connecting", label: "Connecting to Portaldot", endpoint: "", runtime: "" },
+    connection: { mode: "browser-rpc", status: "connecting", label: "Connecting to Portaldot", endpoint: "", runtime: "" },
     metrics: {},
     series: [],
     validators: [],
@@ -78,6 +78,7 @@ export function startPortaldotMonitor(onChange) {
     }
     emit({
       connection: {
+        mode: "browser-rpc",
         status: "live",
         label: chain,
         endpoint: endpoint.host,
