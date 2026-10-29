@@ -74,14 +74,21 @@ export function RegistryPanel({ onHashes }) {
         const saved = (localStorage.getItem("registry") || "").trim();
         const fromEnv = String(import.meta.env.VITE_REGISTRY_ADDRESS || "").trim();
         if (saved || fromEnv) {
-          if (active) setAddress(saved || fromEnv);
-          return saved || fromEnv;
+          const initial = saved || fromEnv;
+          if (active) {
+            setAddress(initial);
+            setQueryAddress(initial);
+          }
+          return initial;
         }
         const response = await fetch("/config.json");
         if (!response.ok) throw new Error(`config.json returned ${response.status}`);
         const config = await response.json();
         const initial = String(config.registry || "").trim();
-        if (active) setAddress(initial);
+        if (active) {
+          setAddress(initial);
+          setQueryAddress(initial);
+        }
         return initial;
       } catch (error) {
         if (active) setStatus(error.message);
