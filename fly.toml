@@ -8,6 +8,7 @@ primary_region = 'jnb'
   RIFT_DATA_DIR = '/data'
   RIFT_HOST = '0.0.0.0'
   RIFT_PORT = '4179'
+  RIFT_CORS_ORIGINS = 'https://rift-portaldot.vercel.app'
 
 [[mounts]]
   source = 'rift_data'
